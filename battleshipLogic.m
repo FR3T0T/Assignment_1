@@ -99,7 +99,7 @@ function placeShip(src, ~)
             title(handles.playerBoard, 'Dit bræt', 'FontWeight', 'bold', 'FontSize', 12);
             
             % Aktiver fjendebræt til at modtage skud
-            set(handles.enemyBoard, 'ButtonDownFcn', @fireShot);
+            set(handles.enemyBoard, 'ButtonDownFcn', @(src,event) battleshipLogic('fireShot', src, event));
             set(handles.playerBoard, 'ButtonDownFcn', []);
         end
     else
