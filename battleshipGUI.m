@@ -145,10 +145,11 @@ function showGameResult(fig, isVictory)
         'FontSize', 14, 'FontWeight', 'bold', 'ForegroundColor', textColor, ...
         'BackgroundColor', [0.9 0.9 1]);
     
-    % Tilføj knap til at starte nyt spil
+    % FIX: Korriger callback til Spil igen-knappen
+    % Denne linje er ændret for at både fjerne resultatpanelet og genstarte spillet
     uicontrol('Parent', resultPanel, 'Style', 'pushbutton', ...
         'Position', [120, 10, 120, 30], 'String', 'Spil igen', ...
-        'Callback', @(src,~) startGame(handles.startButton));
+        'Callback', @(~,~) restartGame(handles.startButton, resultPanel));
 end
 
 function closeGame(src, ~)
@@ -196,6 +197,12 @@ function showInstructions(src, ~)
                  '  3. Den første der sænker alle fjendens skibe vinder!'
              }, ...
              'HorizontalAlignment', 'left');
+end
+
+function restartGame(startButton, resultPanel)
+    % Hjælpefunktion til at fjerne resultatpanelet og starte et nyt spil
+    delete(resultPanel);
+    startGame(startButton, []);
 end
 
 function startGame(src, ~)
