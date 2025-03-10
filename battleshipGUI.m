@@ -108,11 +108,11 @@ function battleshipGUI()
                          'BackgroundColor', [0.95 0.95 0.98], ...
                          'FontWeight', 'bold');
     
-    % Opret spillebrætter som axes med bedre titler
-    playerBoard = axes('Position', [0.25, 0.1, 0.35, 0.8], 'XColor', 'none', 'YColor', 'none');
+    % Opret spillebrætter som axes med bedre titler - ÆNDRING: Tilføjet PickableParts property
+    playerBoard = axes('Position', [0.25, 0.1, 0.35, 0.8], 'XColor', 'none', 'YColor', 'none', 'PickableParts', 'all');
     title('Dit bræt', 'FontWeight', 'bold', 'FontSize', 12);
     
-    enemyBoard = axes('Position', [0.65, 0.1, 0.35, 0.8], 'XColor', 'none', 'YColor', 'none');
+    enemyBoard = axes('Position', [0.65, 0.1, 0.35, 0.8], 'XColor', 'none', 'YColor', 'none', 'PickableParts', 'all');
     title('Modstanderens bræt', 'FontWeight', 'bold', 'FontSize', 12);
     
     % Tilføj spillestatus-linje øverst
@@ -361,10 +361,15 @@ function startGame(src, ~)
         gameData.ships(i).placed = false;
     end
 
-    % Aktiver placeringsfunktion - tilføj debug print
-    disp('Sætter placeShip funktion på brættet');
-    set(handles.playerBoard, 'ButtonDownFcn', @placeShip);
-    disp('ButtonDownFcn sat til @placeShip');
+    % REPLACE:
+    % disp('Sætter placeShip funktion på brættet');
+    % set(handles.playerBoard, 'ButtonDownFcn', @placeShip);
+    % disp('ButtonDownFcn sat til @placeShip');
+
+    % WITH:
+    disp('Sætter placeShip funktion på brættet med anonymous function');
+    set(handles.playerBoard, 'ButtonDownFcn', @(src,event) placeShipWrapper(src, event, fig));
+    disp('ButtonDownFcn sat med wrapper');
 
     
     % Opdater status
@@ -700,6 +705,9 @@ function drawGrid(ax)
     cla(ax);
     hold(ax, 'on');
     
+    % ÆNDRING: Tilføj en klikbar baggrund
+    rectangle('Parent', ax, 'Position', [0 0 10 10], 'FaceColor', 'none', 'EdgeColor', 'none', 'PickableParts', 'all');
+    
     % Sæt akseegenskaber
     axis(ax, [0 10 0 10]);
     axis(ax, 'square');
@@ -729,6 +737,9 @@ function updateGridDisplay(ax, shipGrid, shotGrid, showShips)
     % Opdater gridvisningen baseret på spillets tilstand
     cla(ax);
     hold(ax, 'on');
+    
+    % ÆNDRING: Tilføj en klikbar baggrund
+    rectangle('Parent', ax, 'Position', [0 0 10 10], 'FaceColor', 'none', 'EdgeColor', 'none', 'PickableParts', 'all');
     
     % Tegn grundlæggende grid
     axis(ax, [0 10 0 10]);
@@ -1031,4 +1042,11 @@ function [row, col] = getComputerShot(shotGrid, playerGrid, difficulty)
         
         return;
     end
+end
+
+% Then ADD this new function at the end of the file:
+function placeShipWrapper(src, event, fig)
+    % This wrapper ensures the correct figure context is passed to placeShip
+    disp('Wrapper aktiveret - kalder placeShip');
+    placeShip(src, event);
 end
