@@ -1,3 +1,22 @@
+function varargout = shipPlacement(command, varargin)
+% SHIPPLACEMENT - Funktioner til interaktiv skibsplacering i Battleship
+%
+% Kommandoer:
+%   'placeShipsInteractive' - Interaktiv placering af skibe
+%   'fixedStartGame'        - Modificeret startGame funktion
+%
+% Se hver specifik funktion for flere detaljer om input parametre.
+
+    switch command
+        case 'placeShipsInteractive'
+            placeShipsInteractive(varargin{:});
+        case 'fixedStartGame'
+            fixedStartGame(varargin{:});
+        otherwise
+            error('Ugyldig kommando: %s', command);
+    end
+end
+
 function placeShipsInteractive(fig)
 % PLACESHIPS - Interaktiv funktion til placering af skibe ved hjælp af plot
 %
@@ -180,9 +199,8 @@ function startGameCallback(gameFig, gameData, placeFig)
     close(placeFig);
 end
 
-% Modificer startGame funktionen til at bruge den interaktive placering
 function fixedStartGame(src, ~)
-    disp('startGame aktiveret');
+    disp('fixedStartGame aktiveret');
     
     % Start et nyt spil
     fig = ancestor(src, 'figure');

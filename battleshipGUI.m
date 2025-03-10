@@ -178,10 +178,8 @@ function startGame(src, ~)
         gameData.ships(i).placed = false;
     end
 
-    % Sæt placeShip funktion på brættet
-    disp('Sætter placeShip funktion på brættet med anonymous function');
-    set(handles.playerBoard, 'ButtonDownFcn', @(src,event) battleshipLogic('placeShip', src, event));
-    disp('ButtonDownFcn sat med wrapper');
+    % Sæt en direkte placeringsfunktion på brættet
+    set(handles.playerBoard, 'ButtonDownFcn', @placeShipOnBoard);
     
     % Opdater status
     shipName = gameData.ships(1).name;
@@ -204,6 +202,142 @@ function startGame(src, ~)
     
     % Gem opdateret spilledata
     setappdata(fig, 'gameData', gameData);
+end
+
+function placeShipOnBoard(src, ~)
+    % Håndterer direkte skibsplacering på brættet
+    fig = ancestor(src, 'figure');
+    gameData = getappdata(fig, 'gameData');
+    handles = getappdata(fig, 'handles');
+    
+    % Få koordinater fra klik
+    coords = get(src, 'CurrentPoint');
+    col = floor(coords(1,1)) + 1;
+    row = floor(coords(1,2)) + 1;
+    
+    % Tjek om klikket er inden for brættet
+    if col < 1 || col > 10 || row < 1 || row > 10
+        return;
+    end
+    
+    % Hent orientering og skibslængde
+    orientation = get(handles.orientationSelector, 'Value');
+    currentShip = gameData.currentShip;
+    shipLength = gameData.ships(currentShip).length;
+    
+    % Tjek om placeringen er gyldig
+    valid = validateShipPlacement(gameData.playerGrid, row, col, orientation, shipLength);
+    
+    if valid
+        % Placer skibet
+        if orientation == 1  % Vandret
+            for i = 0:(shipLength-1)
+                gameData.playerGrid(row, col+i) = currentShip;
+            end
+        else  % Lodret
+            for i = 0:(shipLength-1)
+                gameData.playerGrid(row+i, col) = currentShip;
+            end
+        end
+        
+        % Marker skibet som placeret og opdater visning
+        gameData.ships(currentShip).placed = true;
+        battleshipGrid('updateDisplay', handles.playerBoard, gameData.playerGrid, gameData.computerShots, true);
+        
+        % Fortsæt til næste skib eller start spillet
+        if currentShip < length(gameData.ships)
+            gameData.currentShip = currentShip + 1;
+            shipName = gameData.ships(gameData.currentShip).name;
+            shipLength = gameData.ships(gameData.currentShip).length;
+            
+            % Opdater instruktioner og titel
+            set(handles.statusText, 'String', sprintf('Placer dit %s\n(%d felter)\nVælg orientering og \nklik på dit bræt.', shipName, shipLength));
+            title(handles.playerBoard, sprintf('Dit bræt - Placer %s (%d felter)', shipName, shipLength), 'FontWeight', 'bold', 'FontSize', 12, 'Color', [0.2 0.4 0.8]);
+            
+        else
+            gameData.gameState = 'playing';
+            
+            % Opdater UI for spillefasen
+            set(handles.statusText, 'String', 'Alle skibe placeret!\nKlik på modstanderens bræt for at skyde.');
+            set(handles.gameStatusBar, 'String', 'DIN TUR: Klik på modstanderens bræt for at skyde');
+            title(handles.playerBoard, 'Dit bræt', 'FontWeight', 'bold', 'FontSize', 12);
+            
+            % Aktiver fjendebræt til at modtage skud
+            set(handles.enemyBoard, 'ButtonDownFcn', @(src,event) battleshipLogic('fireShot', src, event));
+            set(handles.playerBoard, 'ButtonDownFcn', []);
+        end
+    else
+        % Vis fejlmeddelelse ved ugyldig placering
+        title(handles.playerBoard, 'Ugyldig placering! Prøv igen.', 'FontWeight', 'bold', 'FontSize', 12, 'Color', 'red');
+        % Nulstil titlen efter kort tid
+        t = timer('ExecutionMode', 'singleShot', 'StartDelay', 1.5, ...
+                 'TimerFcn', @(~,~) title(handles.playerBoard, sprintf('Dit bræt - Placer %s (%d felter)', ...
+                                                                     gameData.ships(currentShip).name, shipLength), ...
+                                         'FontWeight', 'bold', 'FontSize', 12, 'Color', [0.2 0.4 0.8]));
+        start(t);
+    end
+    
+    % Gem opdateret spilledata
+    setappdata(fig, 'gameData', gameData);
+end
+
+function valid = validateShipPlacement(grid, row, col, orientation, shipLength)
+    % Tjek om skibet passer på brættet
+    if orientation == 1 && col + shipLength - 1 > 10  % Vandret
+        valid = false;
+        return;
+    elseif orientation == 2 && row + shipLength - 1 > 10  % Lodret
+        valid = false;
+        return;
+    end
+    
+    % Tjek om felterne er ledige
+    valid = true;
+    if orientation == 1  % Vandret
+        for i = 0:(shipLength-1)
+            if grid(row, col+i) ~= 0
+                valid = false;
+                return;
+            end
+        end
+    else  % Lodret
+        for i = 0:(shipLength-1)
+            if grid(row+i, col) ~= 0
+                valid = false;
+                return;
+            end
+        end
+    end
+end
+
+function showInstructions(src, ~)
+    % Forenklet version uden nested functions der løser problemet
+    fig = ancestor(src, 'figure');
+    
+    % Opret simpel instruktionsfigur
+    instructFig = figure('Name', 'Battleship Instruktioner', 'Position', [200, 200, 600, 450], ...
+                       'MenuBar', 'none', 'NumberTitle', 'off', 'Color', [0.95 0.95 0.98]);
+    
+    % Opret tekstboksen først
+    textBox = uicontrol('Parent', instructFig, 'Style', 'text', 'Position', [20, 20, 560, 380], ...
+                     'String', '', 'BackgroundColor', [0.95 0.95 0.98], ...
+                     'FontSize', 11, 'HorizontalAlignment', 'left');
+    
+    % Regler som standard
+    battleshipUI('showRulesContent', textBox);
+    
+    % Brug direkte callbacks med reference til textBox
+    uicontrol('Parent', instructFig, 'Style', 'pushbutton', 'Position', [20, 410, 120, 30], ...
+             'String', 'Spilleregler', 'Callback', @(~,~)battleshipUI('showRulesContent', textBox), ...
+             'BackgroundColor', [0.4 0.5 0.8], 'ForegroundColor', 'white');
+             
+    uicontrol('Parent', instructFig, 'Style', 'pushbutton', 'Position', [150, 410, 120, 30], ...
+             'String', 'Tips & Tricks', 'Callback', @(~,~)battleshipUI('showTipsContent', textBox), ...
+             'BackgroundColor', [0.4 0.5 0.8], 'ForegroundColor', 'white');
+             
+    uicontrol('Parent', instructFig, 'Style', 'pushbutton', 'Position', [280, 410, 120, 30], ...
+             'String', 'Skibe', 'Callback', @(~,~)battleshipUI('showShipsContent', textBox), ...
+             'BackgroundColor', [0.4 0.5 0.8], 'ForegroundColor', 'white');
 end
 
 function closeGame(src, ~)

@@ -6,6 +6,9 @@ function varargout = battleshipUI(command, varargin)
 %   'showGameResult'    - Viser spillets resultat
 %   'showInstructions'  - Viser spilleregler og instruktioner
 %   'restartGame'       - Genstarter spillet
+%   'showRulesContent'  - Opdaterer regeltekst
+%   'showTipsContent'   - Opdaterer tips-tekst
+%   'showShipsContent'  - Opdaterer skibstekst
 %   
 % Se hver specifik funktion for flere detaljer om input parametre.
 
@@ -18,6 +21,12 @@ function varargout = battleshipUI(command, varargin)
             showInstructions(varargin{:});
         case 'restartGame'
             restartGame(varargin{:});
+        case 'showRulesContent'
+            showRulesContent(varargin{:});
+        case 'showTipsContent'
+            showTipsContent(varargin{:});
+        case 'showShipsContent'
+            showShipsContent(varargin{:});
         otherwise
             error('Ugyldig kommando: %s', command);
     end
