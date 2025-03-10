@@ -18,9 +18,9 @@ function battleshipGUI()
     gameData.computerHits = [0, 0, 0]; % Hits on each computer ship
     gameData.playerTurn = true;
     
-    % Opret hovedfigur
-    fig = figure('Name', 'Battleship', 'Position', [100, 100, 1000, 600], ...
-                 'MenuBar', 'none', 'NumberTitle', 'off', 'Color', [0.9 0.9 0.95], ...
+    % Opret hovedfigur med moderne styling
+    fig = figure('Name', 'Battleship', 'Position', [100, 100, 1100, 650], ...
+                 'MenuBar', 'none', 'NumberTitle', 'off', 'Color', [0.95 0.95 0.98], ...
                  'CloseRequestFcn', @closeGame);
     
     % Gem gameData i figure
@@ -28,46 +28,98 @@ function battleshipGUI()
     
     % Opret kontrolpanel
     controlPanel = uipanel('Position', [0.02, 0.02, 0.2, 0.96], 'Title', 'Kontrolpanel', ...
-                          'BackgroundColor', [0.9 0.9 0.95]);
+                          'BackgroundColor', [0.95 0.95 0.98], ...
+                          'FontWeight', 'bold', 'FontSize', 11);
     
-    % Opret sværhedsgrad-selector
+    % Lav pænere sektioner i kontrolpanelet
+    uipanel('Parent', controlPanel, 'Title', 'Indstillinger', ...
+          'Position', [0.05, 0.7, 0.9, 0.25], 'FontSize', 10, ...
+          'BackgroundColor', [0.95 0.95 0.98]);
+    
+    % Opret sværhedsgrad-selector med mere beskrivende tekst
     uicontrol('Parent', controlPanel, 'Style', 'text', 'Position', [20, 520, 120, 20], ...
-              'String', 'Sværhedsgrad:', 'BackgroundColor', [0.9 0.9 0.95]);
+              'String', 'Sværhedsgrad:', 'BackgroundColor', [0.95 0.95 0.98], ...
+              'FontWeight', 'bold');
+    
     difficultySelector = uicontrol('Parent', controlPanel, 'Style', 'popupmenu', ...
                                   'Position', [20, 490, 120, 25], ...
-                                  'String', {'Let', 'Medium', 'Svær'}, ...
+                                  'String', {'Let (tilfældige skud)', 'Medium (målrettet)', 'Svær (avanceret)'}, ...
                                   'Callback', @setDifficulty);
     
-    % Start spil-knap
+    % Start spil-knap med tydeligere design
     startButton = uicontrol('Parent', controlPanel, 'Style', 'pushbutton', ...
                            'Position', [20, 440, 120, 40], ...
-                           'String', 'Start Spil', 'Callback', @startGame);
+                           'String', 'Start Spil', 'FontWeight', 'bold', ...
+                           'BackgroundColor', [0.3 0.6 0.3], 'ForegroundColor', 'white', ...
+                           'Callback', @startGame);
     
-    % Orientering-selector (til skibsplacering)
-    uicontrol('Parent', controlPanel, 'Style', 'text', 'Position', [20, 390, 120, 20], ...
-              'String', 'Orientering:', 'BackgroundColor', [0.9 0.9 0.95]);
-    orientationSelector = uicontrol('Parent', controlPanel, 'Style', 'popupmenu', ...
-                                   'Position', [20, 360, 120, 25], ...
-                                   'String', {'Vandret', 'Lodret'});
+    % Skibsplaceringssektion
+    shipPanel = uipanel('Parent', controlPanel, 'Title', 'Skibsplacering', ...
+          'Position', [0.05, 0.4, 0.9, 0.25], 'FontSize', 10, ...
+          'BackgroundColor', [0.95 0.95 0.98]);
     
-    % Instruktioner-knap
+    % Orientering-selector med forklarende ikon
+    uicontrol('Parent', shipPanel, 'Style', 'text', 'Position', [10, 60, 120, 20], ...
+              'String', 'Orientering:', 'BackgroundColor', [0.95 0.95 0.98], ...
+              'FontWeight', 'bold');
+    
+    orientationSelector = uicontrol('Parent', shipPanel, 'Style', 'popupmenu', ...
+                                   'Position', [10, 35, 120, 25], ...
+                                   'String', {'Vandret →', 'Lodret ↓'});
+    
+    % Visuelt hjælpepanel til skibsplacering
+    uicontrol('Parent', shipPanel, 'Style', 'text', 'Position', [10, 10, 150, 20], ...
+             'String', 'Klik på dit bræt for at placere', ...
+             'BackgroundColor', [0.95 0.95 0.98], ...
+             'HorizontalAlignment', 'left');
+    
+    % Hjælpe-sektion
+    uipanel('Parent', controlPanel, 'Title', 'Hjælp', ...
+          'Position', [0.05, 0.2, 0.9, 0.15], 'FontSize', 10, ...
+          'BackgroundColor', [0.95 0.95 0.98]);
+    
+    % Instruktioner-knap med bedre placering
     instructionsButton = uicontrol('Parent', controlPanel, 'Style', 'pushbutton', ...
-                                 'Position', [20, 310, 120, 30], ...
-                                 'String', 'Instruktioner', 'Callback', @showInstructions);
+                                 'Position', [20, 220, 120, 30], ...
+                                 'String', 'Spilleregler', 'BackgroundColor', [0.4 0.5 0.8], ...
+                                 'ForegroundColor', 'white', ...
+                                 'Callback', @showInstructions);
     
-    % Statusfelt
+    % Symbolforklaring
+    uicontrol('Parent', controlPanel, 'Style', 'text', 'Position', [20, 190, 120, 20], ...
+             'String', 'Symbolforklaring:', 'FontWeight', 'bold', ...
+             'BackgroundColor', [0.95 0.95 0.98], ...
+             'HorizontalAlignment', 'left');
+    
+    % Symboler med farvekoder
+    uicontrol('Parent', controlPanel, 'Style', 'text', 'Position', [20, 90, 130, 95], ...
+             'String', {'■ Blå: Dit skib', ...
+                       'X Rød: Ramt', ...
+                       'O Sort: Forbi', ...
+                       '~ Vand (ikke ramt)'}, ...
+             'BackgroundColor', [0.95 0.95 0.98], ...
+             'HorizontalAlignment', 'left');
+    
+    % Statusfelt med bedre styling - fjernet BorderType
     statusText = uicontrol('Parent', controlPanel, 'Style', 'text', ...
-                         'Position', [10, 50, 160, 250], ...
-                         'String', 'Vælg sværhedsgrad og klik på Start Spil', ...
+                         'Position', [10, 10, 160, 70], ...
+                         'String', 'Vælg sværhedsgrad og klik på "Start Spil"', ...
                          'HorizontalAlignment', 'left', ...
-                         'BackgroundColor', [0.9 0.9 0.95]);
+                         'BackgroundColor', [0.95 0.95 0.98], ...
+                         'FontWeight', 'bold');
     
-    % Opret spillebrætter som axes
-    playerBoard = axes('Position', [0.25, 0.1, 0.35, 0.8]);
-    title('Dit bræt');
+    % Opret spillebrætter som axes med bedre titler
+    playerBoard = axes('Position', [0.25, 0.1, 0.35, 0.8], 'XColor', 'none', 'YColor', 'none');
+    title('Dit bræt', 'FontWeight', 'bold', 'FontSize', 12);
     
-    enemyBoard = axes('Position', [0.65, 0.1, 0.35, 0.8]);
-    title('Modstanderens bræt');
+    enemyBoard = axes('Position', [0.65, 0.1, 0.35, 0.8], 'XColor', 'none', 'YColor', 'none');
+    title('Modstanderens bræt', 'FontWeight', 'bold', 'FontSize', 12);
+    
+    % Tilføj spillestatus-linje øverst
+    gameStatusBar = uicontrol('Style', 'text', 'Position', [400, 620, 300, 25], ...
+                             'String', 'Vælg indstillinger og start spillet', ...
+                             'FontWeight', 'bold', 'FontSize', 11, ...
+                             'BackgroundColor', [0.95 0.95 0.98]);
     
     % Tegn grid for begge brætter
     drawGrid(playerBoard);
@@ -83,6 +135,7 @@ function battleshipGUI()
     handles.statusText = statusText;
     handles.playerBoard = playerBoard;
     handles.enemyBoard = enemyBoard;
+    handles.gameStatusBar = gameStatusBar;
     setappdata(fig, 'handles', handles);
     
     % Deaktiver fjendebræt indtil spillet er startet
@@ -97,12 +150,13 @@ function battleshipGUI()
 end
 
 function showWelcomeScreen(fig)
-    % Overlay panel til velkomst
+    % Overlay panel til velkomst med mere attraktivt design
     welcomePanel = uipanel('Parent', fig, 'Position', [0.25, 0.25, 0.5, 0.5], ...
-        'Title', 'Velkommen til Battleship!', 'FontSize', 14, ...
-        'BackgroundColor', [0.95 0.95 1]);
+        'Title', 'Velkommen til Battleship!', 'FontSize', 14, 'FontWeight', 'bold', ...
+        'BackgroundColor', [0.9 0.95 1], 'HighlightColor', [0.2 0.4 0.8], ...
+        'BorderWidth', 2);
     
-    % Tilføj spilbeskrivelse
+    % Tilføj spilbeskrivelse med bedre formattering
     uicontrol('Parent', welcomePanel, 'Style', 'text', ...
         'Position', [20, 100, 460, 180], 'String', {...
         'SÅDAN SPILLER DU BATTLESHIP:', '', ...
@@ -111,45 +165,55 @@ function showWelcomeScreen(fig)
         '3. Skyd efter computerens skibe ved at klikke på modstanderens bræt', ...
         '4. Den første der sænker alle modstanderens skibe vinder!', ...
         '', ...
-        'Blå felter viser dine skibe', ...
-        'X markerer ramt skib', ...
-        'O markerer forbier (vand)'}, ...
+        'TIP: Når du placerer skibe, begynder du med det største skib først.'}, ...
         'FontSize', 11, 'HorizontalAlignment', 'left', ...
-        'BackgroundColor', [0.95 0.95 1]);
+        'BackgroundColor', [0.9 0.95 1]);
     
-    % Start spil-knap
+    % Start spil-knap med mere tydelig styling
     uicontrol('Parent', welcomePanel, 'Style', 'pushbutton', ...
         'Position', [180, 30, 120, 40], 'String', 'Jeg er klar!', ...
-        'FontSize', 12, 'Callback', @(src,~) delete(welcomePanel));
+        'FontSize', 12, 'FontWeight', 'bold', 'BackgroundColor', [0.3 0.6 0.3], ...
+        'ForegroundColor', 'white', 'Callback', @(src,~) delete(welcomePanel));
 end
 
 function showGameResult(fig, isVictory)
     handles = getappdata(fig, 'handles');
     
-    % Opret overlay panel med resultat
+    % Opret overlay panel med resultat - mere visuelt tiltalende
     resultPanel = uipanel('Parent', fig, 'Position', [0.3, 0.4, 0.4, 0.2], ...
-        'BackgroundColor', [0.9 0.9 1], 'BorderType', 'line', ...
+        'BackgroundColor', [0.95 0.95 1], ...
         'HighlightColor', 'blue', 'BorderWidth', 2);
     
     if isVictory
         resultText = 'SEJR! Du sænkede alle modstanderens skibe!';
         textColor = [0 0.5 0];
+        panelColor = [0.9 1 0.9];
     else
         resultText = 'NEDERLAG! Computeren sænkede alle dine skibe!';
         textColor = [0.8 0 0];
+        panelColor = [1 0.9 0.9];
     end
     
-    % Tilføj tekst
+    % Opdater baggrundsfarve baseret på resultat
+    set(resultPanel, 'BackgroundColor', panelColor);
+    
+    % Tilføj tekst med bedre formattering
     uicontrol('Parent', resultPanel, 'Style', 'text', ...
         'Position', [20, 30, 320, 50], 'String', resultText, ...
         'FontSize', 14, 'FontWeight', 'bold', 'ForegroundColor', textColor, ...
-        'BackgroundColor', [0.9 0.9 1]);
+        'BackgroundColor', panelColor);
     
-    % FIX: Korriger callback til Spil igen-knappen
-    % Denne linje er ændret for at både fjerne resultatpanelet og genstarte spillet
+    % Tilføj knap til at starte nyt spil - tydeligere styling
     uicontrol('Parent', resultPanel, 'Style', 'pushbutton', ...
-        'Position', [120, 10, 120, 30], 'String', 'Spil igen', ...
+        'Position', [120, 10, 120, 30], 'String', 'Spil igen', 'FontWeight', 'bold', ...
+        'BackgroundColor', [0.3 0.6 0.3], 'ForegroundColor', 'white', ...
         'Callback', @(~,~) restartGame(handles.startButton, resultPanel));
+end
+
+function restartGame(startButton, resultPanel)
+    % Hjælpefunktion til at fjerne resultatpanelet og starte et nyt spil
+    delete(resultPanel);
+    startGame(startButton, []);
 end
 
 function closeGame(src, ~)
@@ -171,14 +235,19 @@ function setDifficulty(src, ~)
 end
 
 function showInstructions(src, ~)
-    % Vis spil-instruktioner
+    % Vis spil-instruktioner med bedre layout
     fig = ancestor(src, 'figure');
     
     % Vis instruktioner i en ny figur
-    instructFig = figure('Name', 'Battleship Instruktioner', 'Position', [200, 200, 500, 400], ...
-                       'MenuBar', 'none', 'NumberTitle', 'off');
+    instructFig = figure('Name', 'Battleship Instruktioner', 'Position', [200, 200, 600, 450], ...
+                       'MenuBar', 'none', 'NumberTitle', 'off', 'Color', [0.95 0.95 0.98]);
     
-    uicontrol('Parent', instructFig, 'Style', 'text', 'Position', [20, 20, 460, 360], ...
+    % Tilføj faneblade for forskellige hjælpeemner
+    tabgroup = uitabgroup('Parent', instructFig, 'Position', [0.02 0.02 0.96 0.96]);
+    
+    % Fane 1: Grundlæggende regler
+    tab1 = uitab(tabgroup, 'Title', 'Spilleregler');
+    uicontrol('Parent', tab1, 'Style', 'text', 'Position', [20, 20, 560, 370], ...
              'String', {
                  'SÅDAN SPILLER DU BATTLESHIP:', '', ...
                  'FORMÅL:', ...
@@ -196,13 +265,55 @@ function showInstructions(src, ~)
                  '  2. Skift tur med computeren til at affyre skud', ...
                  '  3. Den første der sænker alle fjendens skibe vinder!'
              }, ...
+             'BackgroundColor', [0.95 0.95 0.98], ...
+             'FontSize', 11, ...
              'HorizontalAlignment', 'left');
-end
-
-function restartGame(startButton, resultPanel)
-    % Hjælpefunktion til at fjerne resultatpanelet og starte et nyt spil
-    delete(resultPanel);
-    startGame(startButton, []);
+    
+    % Fane 2: Tips og tricks
+    tab2 = uitab(tabgroup, 'Title', 'Tips & Tricks');
+    uicontrol('Parent', tab2, 'Style', 'text', 'Position', [20, 20, 560, 370], ...
+             'String', {
+                 'TIPS TIL AT VINDE I BATTLESHIP:', '', ...
+                 '1. SKIBSPLACERING:', ...
+                 '  - Spred dine skibe ud over brættet', ...
+                 '  - Undgå at placere skibe langs kanten', ...
+                 '  - Prøv at placere skibe i uventede mønstre', '', ...
+                 '2. SKYDETAKTIK:', ...
+                 '  - Start med at skyde spredt over brættet', ...
+                 '  - Når du rammer et skib, prøv at skyde i alle fire retninger', ...
+                 '  - Følg rækken af hits for at sænke skibet', ...
+                 '  - Husk på skibenes forskellige længder (4, 3, 2)', '',
+                 '3. SVÆRHEDSGRADER:', ...
+                 '  - Let: Computeren skyder tilfældigt', ...
+                 '  - Medium: Computeren fokuserer på at finde dine skibe', ...
+                 '  - Svær: Computeren bruger avanceret strategi og skakbrætmønster'
+             }, ...
+             'BackgroundColor', [0.95 0.95 0.98], ...
+             'FontSize', 11, ...
+             'HorizontalAlignment', 'left');
+    
+    % Fane 3: Skibsoversigt
+    tab3 = uitab(tabgroup, 'Title', 'Skibe');
+    uicontrol('Parent', tab3, 'Style', 'text', 'Position', [20, 20, 560, 370], ...
+             'String', {
+                 'SKIBSOVERSIGT:', '', ...
+                 '1. BATTLESHIP (SLAGSKIB)', ...
+                 '   Længde: 4 felter', ...
+                 '   Dette er dit største skib', '', ...
+                 '2. CRUISER (KRYDSER)', ...
+                 '   Længde: 3 felter', ...
+                 '   Medium størrelse skib', '', ...
+                 '3. DESTROYER (DESTROYER)', ...
+                 '   Længde: 2 felter', ...
+                 '   Dit mindste og hurtigste skib', '', ...
+                 'PLACERINGSTIPS:', ...
+                 '  - Vælg orientering (vandret eller lodret) før du klikker', ...
+                 '  - Du placerer skibene ét ad gangen, fra størst til mindst', ...
+                 '  - Skibene må ikke røre hinanden eller gå ud over brættet'
+             }, ...
+             'BackgroundColor', [0.95 0.95 0.98], ...
+             'FontSize', 11, ...
+             'HorizontalAlignment', 'left');
 end
 
 function startGame(src, ~)
@@ -226,8 +337,13 @@ function startGame(src, ~)
     end
     
     % Opdater status
-    set(handles.statusText, 'String', sprintf('Placer dit %s (%d felter)\nVælg orientering og klik på dit bræt.', ...
-                                             gameData.ships(1).name, gameData.ships(1).length));
+    shipName = gameData.ships(1).name;
+    shipLength = gameData.ships(1).length;
+    set(handles.statusText, 'String', sprintf('Placer dit %s\n(%d felter)\nVælg orientering og \nklik på dit bræt.', ...
+                                           shipName, shipLength));
+    
+    % Opdater spillestatus
+    set(handles.gameStatusBar, 'String', 'PLACER SKIBE: Vælg orientering og placer dine skibe');
     
     % Opdater brætterne
     drawGrid(handles.playerBoard);
@@ -235,6 +351,9 @@ function startGame(src, ~)
     
     % Aktiver placeringsfunktion
     set(handles.playerBoard, 'ButtonDownFcn', @placeShip);
+    
+    % Fremhæv hvilket skib der skal placeres
+    title(handles.playerBoard, sprintf('Dit bræt - Placer %s (%d felter)', shipName, shipLength), 'FontWeight', 'bold', 'FontSize', 12, 'Color', [0.2 0.4 0.8]);
     
     % Placer computerens skibe
     gameData.computerGrid = placeComputerShipsGUI(gameData.computerGrid, gameData.ships);
@@ -286,25 +405,32 @@ function placeShip(src, ~)
             end
         end
         
-        % Opdater visning
-        updateGridDisplay(handles.playerBoard, gameData.playerGrid, gameData.computerShots, true);
-        
         % Marker skibet som placeret
         gameData.ships(currentShip).placed = true;
+        
+        % Opdater visning
+        updateGridDisplay(handles.playerBoard, gameData.playerGrid, gameData.computerShots, true);
         
         % Gå til næste skib eller start spillet
         if currentShip < length(gameData.ships)
             gameData.currentShip = currentShip + 1;
-            set(handles.statusText, 'String', sprintf('Placer dit %s (%d felter)\nVælg orientering og klik på dit bræt.', ...
-                                                    gameData.ships(gameData.currentShip).name, ...
-                                                    gameData.ships(gameData.currentShip).length));
+            nextShipName = gameData.ships(gameData.currentShip).name;
+            nextShipLength = gameData.ships(gameData.currentShip).length;
+            
+            % Opdater status
+            set(handles.statusText, 'String', sprintf('Placer dit %s\n(%d felter)\nVælg orientering og \nklik på dit bræt.', ...
+                                                    nextShipName, nextShipLength));
+            
+            % Opdater titel
+            title(handles.playerBoard, sprintf('Dit bræt - Placer %s (%d felter)', nextShipName, nextShipLength), 'FontWeight', 'bold', 'FontSize', 12, 'Color', [0.2 0.4 0.8]);
         else
             % Alle skibe placeret - start spillet
             gameData.gameState = 'playing';
             
-            % Vis "spil starter" besked
+            % Vis "spil starter" besked med bedre styling
             gameStartPanel = uipanel('Parent', fig, 'Position', [0.35, 0.45, 0.3, 0.1], ...
-                'BackgroundColor', [0.9 1 0.9]);
+                'BackgroundColor', [0.9 1 0.9], ...
+                'HighlightColor', [0 0.6 0], 'BorderWidth', 2);
            
             uicontrol('Parent', gameStartPanel, 'Style', 'text', ...
                 'Position', [10, 35, 280, 25], 'String', 'Alle skibe placeret! Spillet starter!', ...
@@ -315,12 +441,38 @@ function placeShip(src, ~)
                 'TimerFcn', @(~,~) delete(gameStartPanel));
             start(t);
             
-            set(handles.statusText, 'String', 'Spillet er i gang! Klik på modstanderens bræt for at skyde.');
+            % Opdater status
+            set(handles.statusText, 'String', 'DIN TUR!\nKlik på modstanderens bræt for at skyde.');
+            
+            % Opdater spillestatus
+            set(handles.gameStatusBar, 'String', 'SPIL I GANG: Din tur - skyd på modstanderens bræt');
+            
+            % Nulstil brættitler
+            title(handles.playerBoard, 'Dit bræt', 'FontWeight', 'bold', 'FontSize', 12);
+            title(handles.enemyBoard, 'Modstanderens bræt - SKYD HER', 'FontWeight', 'bold', 'FontSize', 12, 'Color', [0.8 0.2 0.2]);
+            
+            % Deaktiver spillerens bræt og aktiver fjendens bræt
             set(handles.playerBoard, 'ButtonDownFcn', []);
             set(handles.enemyBoard, 'ButtonDownFcn', @fireShot);
         end
     else
-        set(handles.statusText, 'String', 'Ugyldig placering! Prøv igen.');
+        % Vis tydelig fejlbesked
+        set(handles.statusText, 'String', 'UGYLDIG PLACERING!\nSkibet ville gå ud over brættet eller kollidere med et andet skib. Prøv igen.');
+        
+        % Vis advarsel i kortvarig popup
+        warningPanel = uipanel('Parent', fig, 'Position', [0.35, 0.45, 0.3, 0.1], ...
+                              'BackgroundColor', [1 0.9 0.9], ...
+                              'HighlightColor', [0.8 0 0], 'BorderWidth', 2);
+        
+        uicontrol('Parent', warningPanel, 'Style', 'text', ...
+                 'Position', [10, 35, 280, 25], 'String', 'Ugyldig placering! Prøv igen.', ...
+                 'FontSize', 12, 'FontWeight', 'bold', 'ForegroundColor', [0.8 0 0], ...
+                 'BackgroundColor', [1 0.9 0.9]);
+        
+        % Fjern advarsel efter 1.5 sekunder
+        t = timer('ExecutionMode', 'singleShot', 'StartDelay', 1.5, ...
+                 'TimerFcn', @(~,~) delete(warningPanel));
+        start(t);
     end
     
     setappdata(fig, 'gameData', gameData);
@@ -349,34 +501,85 @@ function fireShot(src, ~)
     
     % Tjek om feltet allerede er beskudt
     if gameData.playerShots(row, col) > 0
-        set(handles.statusText, 'String', 'Du har allerede skudt her! Vælg et andet felt.');
+        set(handles.statusText, 'String', 'Du har allerede skudt her!\nVælg et andet felt.');
+        
+        % Vis advarsel
+        warningPanel = uipanel('Parent', fig, 'Position', [0.65, 0.45, 0.3, 0.1], ...
+                              'BackgroundColor', [1 0.9 0.9], ...
+                              'HighlightColor', [0.8 0 0], 'BorderWidth', 2);
+        
+        uicontrol('Parent', warningPanel, 'Style', 'text', ...
+                 'Position', [10, 35, 280, 25], 'String', 'Du har allerede skudt her!', ...
+                 'FontSize', 12, 'FontWeight', 'bold', 'ForegroundColor', [0.8 0 0], ...
+                 'BackgroundColor', [1 0.9 0.9]);
+        
+        % Fjern advarsel efter 1.5 sekunder
+        t = timer('ExecutionMode', 'singleShot', 'StartDelay', 1.5, ...
+                 'TimerFcn', @(~,~) delete(warningPanel));
+        start(t);
         return;
     end
     
     % Vis koordinater
     coordStr = sprintf('%c%d', 'A' + row - 1, col);
     
-    % Registrer spillerens skud
+    % Opdater spillestatus
+    set(handles.gameStatusBar, 'String', sprintf('Du skyder på %s', coordStr));
+    
+    % Registrer spillerens skud med visuel feedback
     if gameData.computerGrid(row, col) > 0
         % Hit
         shipType = gameData.computerGrid(row, col);
         gameData.playerShots(row, col) = 2; % Mark as hit
-        set(handles.statusText, 'String', sprintf('HIT! Du ramte et %s på %s!', gameData.ships(shipType).name, coordStr));
+        
+        % Opdater status
+        set(handles.statusText, 'String', sprintf('TRÆFFER!\nDu ramte et %s på %s!', gameData.ships(shipType).name, coordStr));
         
         % Track ship damage
         gameData.computerHits(shipType) = gameData.computerHits(shipType) + 1;
         
         % Check if ship sunk
         if gameData.computerHits(shipType) == gameData.ships(shipType).length
-            set(handles.statusText, 'String', sprintf('Du sænkede modstanderens %s!', gameData.ships(shipType).name));
+            % Vis besked om sænket skib
+            sunkPanel = uipanel('Parent', fig, 'Position', [0.65, 0.5, 0.3, 0.15], ...
+                               'BackgroundColor', [0.9 0.95 1], ...
+                               'HighlightColor', [0 0.5 0.8], 'BorderWidth', 2);
+            
+            uicontrol('Parent', sunkPanel, 'Style', 'text', ...
+                     'Position', [10, 40, 280, 40], 'String', sprintf('Du sænkede modstanderens %s!', gameData.ships(shipType).name), ...
+                     'FontSize', 14, 'FontWeight', 'bold', 'ForegroundColor', [0 0.5 0.8], ...
+                     'BackgroundColor', [0.9 0.95 1]);
+            
+            % Fjern besked efter 2 sekunder
+            t = timer('ExecutionMode', 'singleShot', 'StartDelay', 2, ...
+                     'TimerFcn', @(~,~) delete(sunkPanel));
+            start(t);
+            
+            set(handles.statusText, 'String', sprintf('SKIBET SÆNKET!\nDu sænkede modstanderens %s!', gameData.ships(shipType).name));
         end
     else
         % Miss
         gameData.playerShots(row, col) = 1; % Mark as miss
-        set(handles.statusText, 'String', sprintf('MISS! Dit skud på %s ramte ingenting.', coordStr));
+        set(handles.statusText, 'String', sprintf('FORBI!\nDit skud på %s ramte ingenting.', coordStr));
     end
     
-    % Opdater visning
+    % Opdater visning med animation
+    hitEffect = [];
+    if gameData.playerShots(row, col) == 2
+        % Effekt ved træffer
+        axes(handles.enemyBoard);
+        hitEffect = rectangle('Position', [col-1, row-1, 1, 1], 'FaceColor', [1 0.5 0.5], 'EdgeColor', 'red', 'LineWidth', 2);
+    else
+        % Effekt ved forbi
+        axes(handles.enemyBoard);
+        hitEffect = plot(col-0.5, row-0.5, 'ko', 'MarkerSize', 25, 'LineWidth', 2, 'MarkerFaceColor', [0.8 0.8 0.8]);
+    end
+    
+    % Opdater brætvisning efter kort forsinkelse
+    pause(0.3);
+    if ~isempty(hitEffect) && isvalid(hitEffect)
+        delete(hitEffect);
+    end
     updateGridDisplay(handles.enemyBoard, zeros(10,10), gameData.playerShots, false);
     
     % Check for win
@@ -384,6 +587,7 @@ function fireShot(src, ~)
         gameData.gameState = 'gameover';
         set(handles.statusText, 'String', 'SEJR! Du sænkede alle modstanderens skibe!');
         set(handles.enemyBoard, 'ButtonDownFcn', []);
+        set(handles.gameStatusBar, 'String', 'SPILLET ER SLUT: Du har vundet!', 'ForegroundColor', [0 0.6 0]);
         setappdata(fig, 'gameData', gameData);
         
         % Vis sejrbesked
@@ -394,6 +598,9 @@ function fireShot(src, ~)
     % Skift tur
     gameData.playerTurn = false;
     setappdata(fig, 'gameData', gameData);
+    
+    % Opdater UI før computerens tur
+    set(handles.gameStatusBar, 'String', 'MODSTANDERENS TUR: Computeren skyder...', 'ForegroundColor', [0.8 0 0]);
     
     % Computerens tur - med lille forsinkelse så spilleren kan se hvad der sker
     pause(0.8);
@@ -416,7 +623,13 @@ function computerTurn(fig)
     
     % Update status to show computer's move
     set(handles.statusText, 'String', sprintf('Computeren skyder på %s', coordStr));
+    set(handles.gameStatusBar, 'String', sprintf('Computeren skyder på %s', coordStr));
+    
+    % Vis indikator for computerens skud
+    axes(handles.playerBoard);
+    targetMarker = plot(col-0.5, row-0.5, 'ro', 'MarkerSize', 15, 'LineWidth', 2);
     pause(0.5);
+    delete(targetMarker);
     
     % Process shot
     if gameData.playerGrid(row, col) > 0
@@ -424,7 +637,13 @@ function computerTurn(fig)
         shipType = gameData.playerGrid(row, col);
         gameData.computerShots(row, col) = 2; % Mark as hit
         
-        set(handles.statusText, 'String', sprintf('HIT! Computeren ramte dit %s på %s!', ...
+        % Visuelt fremhæv ramt felt
+        axes(handles.playerBoard);
+        hitEffect = rectangle('Position', [col-1, row-1, 1, 1], 'FaceColor', [1 0.5 0.5], 'EdgeColor', 'red', 'LineWidth', 2);
+        pause(0.3);
+        delete(hitEffect);
+        
+        set(handles.statusText, 'String', sprintf('RAMT! Computeren ramte dit %s på %s!', ...
                                                 gameData.ships(shipType).name, coordStr));
         
         % Track ship damage
@@ -432,12 +651,34 @@ function computerTurn(fig)
         
         % Check if ship sunk
         if gameData.playerHits(shipType) == gameData.ships(shipType).length
-            set(handles.statusText, 'String', sprintf('Computeren sænkede dit %s!', gameData.ships(shipType).name));
+            set(handles.statusText, 'String', sprintf('SKIBET SÆNKET! Computeren sænkede dit %s!', gameData.ships(shipType).name));
+            
+            % Vis besked om sænket skib
+            sunkPanel = uipanel('Parent', fig, 'Position', [0.25, 0.5, 0.3, 0.15], ...
+                              'BackgroundColor', [1 0.9 0.9], ...
+                              'HighlightColor', [0.8 0 0], 'BorderWidth', 2);
+            
+            uicontrol('Parent', sunkPanel, 'Style', 'text', ...
+                    'Position', [10, 40, 280, 40], 'String', sprintf('Computeren sænkede dit %s!', gameData.ships(shipType).name), ...
+                    'FontSize', 14, 'FontWeight', 'bold', 'ForegroundColor', [0.8 0 0], ...
+                    'BackgroundColor', [1 0.9 0.9]);
+            
+            % Fjern besked efter 2 sekunder
+            t = timer('ExecutionMode', 'singleShot', 'StartDelay', 2, ...
+                    'TimerFcn', @(~,~) delete(sunkPanel));
+            start(t);
         end
     else
         % Miss
         gameData.computerShots(row, col) = 1; % Mark as miss
-        set(handles.statusText, 'String', sprintf('MISS! Computerens skud på %s ramte ingenting.', coordStr));
+        
+        % Visuelt fremhæv forbiskud
+        axes(handles.playerBoard);
+        missEffect = plot(col-0.5, row-0.5, 'ko', 'MarkerSize', 20, 'LineWidth', 2);
+        pause(0.3);
+        delete(missEffect);
+        
+        set(handles.statusText, 'String', sprintf('FORBI! Computerens skud på %s ramte ingenting.', coordStr));
     end
     
     % Update display
@@ -448,6 +689,7 @@ function computerTurn(fig)
         gameData.gameState = 'gameover';
         set(handles.statusText, 'String', 'NEDERLAG! Computeren sænkede alle dine skibe!');
         set(handles.enemyBoard, 'ButtonDownFcn', []);
+        set(handles.gameStatusBar, 'String', 'SPILLET ER SLUT: Computeren har vundet', 'ForegroundColor', [0.8 0 0]);
         setappdata(fig, 'gameData', gameData);
         
         % Vis nederlagsbesked
@@ -459,6 +701,9 @@ function computerTurn(fig)
     gameData.playerTurn = true;
     pause(0.5);
     
+    % Opdater spillestatus
+    set(handles.gameStatusBar, 'String', 'DIN TUR: Klik på modstanderens bræt for at skyde', 'ForegroundColor', [0 0 0]);
+    
     % Prompt player for next move
     set(handles.statusText, 'String', sprintf('%s\nDin tur - klik på modstanderens bræt for at skyde.', ...
                                             get(handles.statusText, 'String')));
@@ -467,7 +712,7 @@ function computerTurn(fig)
 end
 
 function drawGrid(ax)
-    % Tegn et tomt 10x10 grid
+    % Tegn et tomt 10x10 grid med forbedret stil
     cla(ax);
     hold(ax, 'on');
     
@@ -475,16 +720,19 @@ function drawGrid(ax)
     axis(ax, [0 10 0 10]);
     axis(ax, 'square');
     
-    % Tegn gridlinjer
+    % Farvelæg baggrunden for bedre kontrast
+    fill(ax, [0 10 10 0], [0 0 10 10], [0.96 0.98 1], 'EdgeColor', 'none');
+    
+    % Tegn gridlinjer med lidt skygge
     for i = 0:10
-        line(ax, [i i], [0 10], 'Color', 'k');
-        line(ax, [0 10], [i i], 'Color', 'k');
+        line(ax, [i i], [0 10], 'Color', [0.7 0.7 0.8]);
+        line(ax, [0 10], [i i], 'Color', [0.7 0.7 0.8]);
     end
     
-    % Tilføj labels
+    % Tilføj labels med bedre formattering
     for i = 1:10
-        text(ax, i-0.5, -0.3, num2str(i), 'HorizontalAlignment', 'center');
-        text(ax, -0.3, i-0.5, char('A'+i-1), 'HorizontalAlignment', 'center');
+        text(ax, i-0.5, -0.3, num2str(i), 'HorizontalAlignment', 'center', 'FontWeight', 'bold');
+        text(ax, -0.3, i-0.5, char('A'+i-1), 'HorizontalAlignment', 'center', 'FontWeight', 'bold');
     end
     
     % Fjern standard akseticks
@@ -502,34 +750,40 @@ function updateGridDisplay(ax, shipGrid, shotGrid, showShips)
     axis(ax, [0 10 0 10]);
     axis(ax, 'square');
     
-    % Tegn gridlinjer
+    % Farvelæg baggrunden for bedre kontrast
+    fill([0 10 10 0], [0 0 10 10], [0.96 0.98 1], 'EdgeColor', 'none');
+    
+    % Tegn gridlinjer med lidt skygge
     for i = 0:10
-        line(ax, [i i], [0 10], 'Color', 'k');
-        line(ax, [0 10], [i i], 'Color', 'k');
+        line([i i], [0 10], 'Color', [0.7 0.7 0.8]);
+        line([0 10], [i i], 'Color', [0.7 0.7 0.8]);
     end
     
-    % Tilføj labels
+    % Tilføj labels med bedre formattering
     for i = 1:10
-        text(ax, i-0.5, -0.3, num2str(i), 'HorizontalAlignment', 'center');
-        text(ax, -0.3, i-0.5, char('A'+i-1), 'HorizontalAlignment', 'center');
+        text(i-0.5, -0.3, num2str(i), 'HorizontalAlignment', 'center', 'FontWeight', 'bold');
+        text(-0.3, i-0.5, char('A'+i-1), 'HorizontalAlignment', 'center', 'FontWeight', 'bold');
     end
     
     % Fjern standard akseticks
     set(ax, 'XTick', [], 'YTick', []);
     
-    % Visualiser skibe, hits og misses
+    % Visualiser skibe, hits og misses med forbedret udseende
     for i = 1:10
         for j = 1:10
             if shotGrid(i, j) == 2
                 % Hit
-                rectangle(ax, 'Position', [j-1, i-1, 1, 1], 'FaceColor', 'red');
-                plot(ax, j-0.5, i-0.5, 'kx', 'LineWidth', 2, 'MarkerSize', 15);
+                rectangle('Position', [j-1, i-1, 1, 1], 'FaceColor', [0.9 0.3 0.3], 'EdgeColor', [0.7 0 0]);
+                plot(j-0.5, i-0.5, 'kx', 'LineWidth', 2, 'MarkerSize', 15);
             elseif shotGrid(i, j) == 1
                 % Miss
-                plot(ax, j-0.5, i-0.5, 'ko', 'MarkerSize', 10, 'LineWidth', 1.5);
+                plot(j-0.5, i-0.5, 'ko', 'MarkerSize', 10, 'LineWidth', 1.5, 'MarkerFaceColor', [0.5 0.5 0.5]);
             elseif showShips && shipGrid(i, j) > 0
-                % Ship
-                rectangle(ax, 'Position', [j-1, i-1, 1, 1], 'FaceColor', [0.3 0.5 0.8]);
+                % Ship - mere visuelt attraktiv repræsentation
+                shipType = shipGrid(i, j);
+                shipColors = {[0.2 0.4 0.8], [0.3 0.5 0.8], [0.4 0.6 0.9]}; % Forskellige nuancer til forskellige skibe
+                rectangle('Position', [j-1, i-1, 1, 1], 'FaceColor', shipColors{shipType}, ...
+                         'EdgeColor', [0.1 0.2 0.5], 'LineWidth', 1);
             end
         end
     end
@@ -628,5 +882,169 @@ function grid = placeComputerShipsGUI(grid, ships)
             
             placedSuccessfully = true;
         end
+    end
+end
+
+% Vi importerer getComputerShot funktionen fra den originale implementation
+function [row, col] = getComputerShot(shotGrid, playerGrid, difficulty)
+    % Get computer's shot based on difficulty level
+    
+    % Grid size
+    [rows, cols] = size(shotGrid);
+    
+    % EASY MODE - random shots
+    if difficulty == 1
+        validShot = false;
+        
+        while ~validShot
+            % Random position
+            row = randi(rows);
+            col = randi(cols);
+            
+            % Check if already shot at this position
+            if shotGrid(row, col) == 0
+                validShot = true;
+            end
+        end
+        
+        return;
+    end
+    
+    % MEDIUM MODE - hunt and target
+    if difficulty == 2
+        % Look for hits to target adjacent cells
+        for i = 1:rows
+            for j = 1:cols
+                if shotGrid(i, j) == 2  % Found a hit
+                    % Try adjacent cells (up, down, left, right)
+                    directions = [[-1, 0]; [1, 0]; [0, -1]; [0, 1]];
+                    
+                    for d = 1:length(directions)
+                        newRow = i + directions(d, 1);
+                        newCol = j + directions(d, 2);
+                        
+                        % Check if valid and not already tried
+                        if newRow >= 1 && newRow <= rows && newCol >= 1 && newCol <= cols && shotGrid(newRow, newCol) == 0
+                            row = newRow;
+                            col = newCol;
+                            return;
+                        end
+                    end
+                end
+            end
+        end
+        
+        % If no hits found, take random shot
+        validShot = false;
+        while ~validShot
+            row = randi(rows);
+            col = randi(cols);
+            
+            if shotGrid(row, col) == 0
+                validShot = true;
+            end
+        end
+        
+        return;
+    end
+    
+    % HARD MODE - advanced targeting
+    if difficulty == 3
+        % First, look for two adjacent hits to extend the line
+        for i = 1:rows
+            for j = 1:cols-1
+                if shotGrid(i, j) == 2 && shotGrid(i, j+1) == 2  % Horizontal hits
+                    % Try left
+                    if j > 1 && shotGrid(i, j-1) == 0
+                        row = i;
+                        col = j-1;
+                        return;
+                    end
+                    
+                    % Try right
+                    if j+2 <= cols && shotGrid(i, j+2) == 0
+                        row = i;
+                        col = j+2;
+                        return;
+                    end
+                end
+            end
+        end
+        
+        for j = 1:cols
+            for i = 1:rows-1
+                if shotGrid(i, j) == 2 && shotGrid(i+1, j) == 2  % Vertical hits
+                    % Try up
+                    if i > 1 && shotGrid(i-1, j) == 0
+                        row = i-1;
+                        col = j;
+                        return;
+                    end
+                    
+                    % Try down
+                    if i+2 <= rows && shotGrid(i+2, j) == 0
+                        row = i+2;
+                        col = j;
+                        return;
+                    end
+                end
+            end
+        end
+        
+        % If no adjacent hits, use medium difficulty strategy
+        % Look for single hits
+        for i = 1:rows
+            for j = 1:cols
+                if shotGrid(i, j) == 2  % Found a hit
+                    % Try adjacent cells
+                    directions = [[-1, 0]; [1, 0]; [0, -1]; [0, 1]];
+                    
+                    for d = 1:length(directions)
+                        newRow = i + directions(d, 1);
+                        newCol = j + directions(d, 2);
+                        
+                        if newRow >= 1 && newRow <= rows && newCol >= 1 && newCol <= cols && shotGrid(newRow, newCol) == 0
+                            row = newRow;
+                            col = newCol;
+                            return;
+                        end
+                    end
+                end
+            end
+        end
+        
+        % If no hits found, take random shot using checkerboard pattern
+        validShot = false;
+        attempts = 0;
+        
+        % Try checkerboard pattern first
+        while ~validShot && attempts < 50
+            attempts = attempts + 1;
+            
+            % Get random position adhering to checkerboard pattern
+            r = randi(rows);
+            c = randi(cols);
+            
+            % Only consider positions where r+c is even (checkerboard)
+            if mod(r+c, 2) == 0 && shotGrid(r, c) == 0
+                row = r;
+                col = c;
+                validShot = true;
+            end
+        end
+        
+        % If checkerboard failed, take any valid shot
+        if ~validShot
+            while ~validShot
+                row = randi(rows);
+                col = randi(cols);
+                
+                if shotGrid(row, col) == 0
+                    validShot = true;
+                end
+            end
+        end
+        
+        return;
     end
 end
