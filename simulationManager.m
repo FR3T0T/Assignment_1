@@ -1,24 +1,24 @@
 function simulationManager()
-% SIMULATIONMANAGER - GUI for at håndtere Battleship simulationer
+% SIMULATIONMANAGER - GUI for managing Battleship simulations
     
     % Create figure
-    fig = figure('Name', 'Battleship Simulationsmanager', 'Position', [300, 300, 500, 400], ...
+    fig = figure('Name', 'Battleship Simulation Manager', 'Position', [300, 300, 500, 400], ...
                 'MenuBar', 'none', 'NumberTitle', 'off');
     
     % Main panel
     mainPanel = uipanel('Parent', fig, 'Position', [0.05, 0.05, 0.9, 0.9], ...
-                      'Title', 'Simulationskonfiguration', 'FontSize', 12);
+                      'Title', 'Simulation Configuration', 'FontSize', 12);
     
     % Simulation options
     uicontrol('Parent', mainPanel, 'Style', 'text', 'Position', [20, 300, 200, 20], ...
-             'String', 'Antal simulationer per sværhedsgrad:', 'HorizontalAlignment', 'left');
+             'String', 'Number of simulations per difficulty:', 'HorizontalAlignment', 'left');
     
     numSimsEdit = uicontrol('Parent', mainPanel, 'Style', 'edit', 'Position', [230, 300, 100, 25], ...
                           'String', '100');
                           
     % Simulation speed
     uicontrol('Parent', mainPanel, 'Style', 'text', 'Position', [20, 270, 200, 20], ...
-             'String', 'Simulationshastighed (1-10):', 'HorizontalAlignment', 'left');
+             'String', 'Simulation speed (1-10):', 'HorizontalAlignment', 'left');
              
     speedSlider = uicontrol('Parent', mainPanel, 'Style', 'slider', 'Position', [230, 270, 100, 25], ...
                            'Min', 1, 'Max', 10, 'Value', 10, 'SliderStep', [0.1 0.1]);
@@ -32,41 +32,41 @@ function simulationManager()
     
     % Difficulty level checkboxes
     diffPanel = uipanel('Parent', mainPanel, 'Position', [0.05, 0.6, 0.9, 0.25], ...
-                      'Title', 'Sværhedsgrader at simulere:', 'FontSize', 10);
+                      'Title', 'Difficulty levels to simulate:', 'FontSize', 10);
     
     easyCheck = uicontrol('Parent', diffPanel, 'Style', 'checkbox', 'Position', [20, 60, 100, 20], ...
-                        'String', 'Let', 'Value', 1);
+                        'String', 'Easy', 'Value', 1);
     
     mediumCheck = uicontrol('Parent', diffPanel, 'Style', 'checkbox', 'Position', [20, 35, 100, 20], ...
                           'String', 'Medium', 'Value', 1);
     
     hardCheck = uicontrol('Parent', diffPanel, 'Style', 'checkbox', 'Position', [20, 10, 100, 20], ...
-                        'String', 'Svær', 'Value', 1);
+                        'String', 'Hard', 'Value', 1);
     
     % Output options
     outputPanel = uipanel('Parent', mainPanel, 'Position', [0.05, 0.3, 0.9, 0.25], ...
-                        'Title', 'Output indstillinger:', 'FontSize', 10);
+                        'Title', 'Output options:', 'FontSize', 10);
     
     plotCheck = uicontrol('Parent', outputPanel, 'Style', 'checkbox', 'Position', [20, 60, 220, 20], ...
-                        'String', 'Vis plots under simulering', 'Value', 0);
+                        'String', 'Show plots during simulation', 'Value', 0);
     
     summaryCheck = uicontrol('Parent', outputPanel, 'Style', 'checkbox', 'Position', [20, 35, 220, 20], ...
-                           'String', 'Vis opsummerende plots', 'Value', 1);
+                           'String', 'Show summary plots', 'Value', 1);
     
     saveCheck = uicontrol('Parent', outputPanel, 'Style', 'checkbox', 'Position', [20, 10, 220, 20], ...
-                        'String', 'Gem resultater til workspace', 'Value', 1);
+                        'String', 'Save results to workspace', 'Value', 1);
     
     % Buttons
     runButton = uicontrol('Parent', mainPanel, 'Style', 'pushbutton', 'Position', [150, 40, 200, 40], ...
-                        'String', 'Kør simulationer', 'FontSize', 12, ...
+                        'String', 'Run simulations', 'FontSize', 12, ...
                         'Callback', @runSimulations);
     
-    % Tilføj hjælpe-knap
+    % Add help button
     uicontrol('Parent', mainPanel, 'Style', 'pushbutton', 'Position', [380, 10, 60, 30], ...
-             'String', 'Hjælp', 'Callback', @showHelp);
+             'String', 'Help', 'Callback', @showHelp);
     
     function runSimulations(~, ~)
-        % Få simuleringskonfiguration
+        % Get simulation configuration
         numSims = str2double(get(numSimsEdit, 'String'));
         runEasy = get(easyCheck, 'Value');
         runMedium = get(mediumCheck, 'Value');
@@ -76,31 +76,31 @@ function simulationManager()
         saveToWorkspace = get(saveCheck, 'Value');
         simulationSpeed = round(get(speedSlider, 'Value'));
         
-        % Valider antal simulationer
+        % Validate number of simulations
         if isnan(numSims) || numSims <= 0 || numSims > 10000
-            errordlg('Antal simulationer skal være et positivt tal (maks 10000)', 'Ugyldig input');
+            errordlg('Number of simulations must be a positive number (max 10000)', 'Invalid input');
             return;
         end
         
-        % Vis venteskærm
+        % Show wait screen
         waitPanel = uipanel('Parent', fig, 'Position', [0.2, 0.4, 0.6, 0.2], ...
-                          'Title', 'Simulering i gang', 'FontSize', 12);
+                          'Title', 'Simulation in progress', 'FontSize', 12);
         
         statusText = uicontrol('Parent', waitPanel, 'Style', 'text', ...
-                             'Position', [20, 30, 260, 20], 'String', 'Forbereder simulering...');
+                             'Position', [20, 30, 260, 20], 'String', 'Preparing simulation...');
         
-        % Forbered resultater
+        % Prepare results
         allResults = {};
         difficultyLabels = {};
         
-        % Kør simulationerne
+        % Run simulations
         try
             if runEasy
-                set(statusText, 'String', sprintf('Simulerer LET sværhedsgrad (hastighed: %d/10)...', simulationSpeed));
+                set(statusText, 'String', sprintf('Simulating EASY difficulty (speed: %d/10)...', simulationSpeed));
                 drawnow;
                 easyResults = simulateGames(numSims, 1, simulationSpeed);
                 allResults{end+1} = easyResults;
-                difficultyLabels{end+1} = 'Let';
+                difficultyLabels{end+1} = 'Easy';
                 
                 if saveToWorkspace
                     assignin('base', 'battleshipEasyResults', easyResults);
@@ -108,7 +108,7 @@ function simulationManager()
             end
             
             if runMedium
-                set(statusText, 'String', sprintf('Simulerer MEDIUM sværhedsgrad (hastighed: %d/10)...', simulationSpeed));
+                set(statusText, 'String', sprintf('Simulating MEDIUM difficulty (speed: %d/10)...', simulationSpeed));
                 drawnow;
                 mediumResults = simulateGames(numSims, 2, simulationSpeed);
                 allResults{end+1} = mediumResults;
@@ -120,26 +120,26 @@ function simulationManager()
             end
             
             if runHard
-                set(statusText, 'String', sprintf('Simulerer SVÆR sværhedsgrad (hastighed: %d/10)...', simulationSpeed));
+                set(statusText, 'String', sprintf('Simulating HARD difficulty (speed: %d/10)...', simulationSpeed));
                 drawnow;
                 hardResults = simulateGames(numSims, 3, simulationSpeed);
                 allResults{end+1} = hardResults;
-                difficultyLabels{end+1} = 'Svær';
+                difficultyLabels{end+1} = 'Hard';
                 
                 if saveToWorkspace
                     assignin('base', 'battleshipHardResults', hardResults);
                 end
             end
             
-            % Fjern ventepanel
+            % Remove wait panel
             delete(waitPanel);
             
-            % Vis opsummerende plots hvis valgt
+            % Show summary plots if selected
             if showSummary && length(allResults) > 0
                 createSummaryPlots(allResults, difficultyLabels);
             end
             
-            % Opret sammenligningstabel
+            % Create comparison table
             if length(allResults) > 0
                 comparisonTable = createComparisonTable(allResults, difficultyLabels);
                 
@@ -147,24 +147,24 @@ function simulationManager()
                     assignin('base', 'battleshipComparisonTable', comparisonTable);
                 end
                 
-                % Vis resultatbesked
-                msgbox('Simulationerne er gennemført!', 'Færdig');
+                % Show result message
+                msgbox('Simulations completed!', 'Done');
             else
-                msgbox('Ingen simulationer valgt!', 'Advarsel');
+                msgbox('No simulations selected!', 'Warning');
             end
             
         catch e
-            % Håndter fejl
+            % Handle errors
             delete(waitPanel);
-            errordlg(['Der opstod en fejl under simuleringen: ' e.message], 'Fejl');
+            errordlg(['An error occurred during simulation: ' e.message], 'Error');
         end
     end
 
     function createSummaryPlots(results, labels)
-        % Sammenlign resultater med plots
-        figure('Name', 'Sammenligning af sværhedsgrader', 'Position', [100, 100, 1200, 800]);
+        % Compare results with plots
+        figure('Name', 'Comparison of difficulty levels', 'Position', [100, 100, 1200, 800]);
         
-        % Sammensæt data
+        % Compile data
         allMoves = [];
         allHitRatios = [];
         groupLabels = {};
@@ -175,41 +175,41 @@ function simulationManager()
             groupLabels = [groupLabels; repmat(labels(i), length(results{i}.totalMoves), 1)];
         end
         
-        % Plot 1: Antal træk
+        % Plot 1: Number of moves
         subplot(2, 2, 1);
         boxplot(allMoves, groupLabels);
-        title('Sammenligning af antal træk');
-        ylabel('Antal træk');
+        title('Comparison of number of moves');
+        ylabel('Number of moves');
         
         % Plot 2: Hit ratio
         subplot(2, 2, 2);
         boxplot(allHitRatios, groupLabels);
-        title('Sammenligning af hit ratio');
+        title('Comparison of hit ratio');
         ylabel('Hit ratio');
         
-        % Plot 3: Gennemsnitlige værdier
+        % Plot 3: Average values
         subplot(2, 2, 3);
         avgMoves = cellfun(@(x) x.avgMoves, results);
         avgHitRatios = cellfun(@(x) x.avgHitRatio*100, results);
         
         avgData = [avgMoves; avgHitRatios];
         bar(avgData');
-        title('Gennemsnitlige værdier');
+        title('Average values');
         set(gca, 'XTickLabel', labels);
-        legend({'Antal træk', 'Hit ratio (%)'}, 'Location', 'northwest');
+        legend({'Number of moves', 'Hit ratio (%)'}, 'Location', 'northwest');
         
         % Plot 4: Win rates
         subplot(2, 2, 4);
         winRates = cellfun(@(x) x.winRate, results);
         bar(winRates);
-        title('Vinder-procent');
+        title('Win percentage');
         set(gca, 'XTickLabel', labels);
-        ylabel('Procent (%)');
+        ylabel('Percentage (%)');
         ylim([0, 100]);
     end
 
     function table = createComparisonTable(results, labels)
-        % Opret sammenligningstabel
+        % Create comparison table
         numDifficulties = length(results);
         
         avgMoves = zeros(numDifficulties, 1);
@@ -226,41 +226,41 @@ function simulationManager()
             winRates(i) = results{i}.winRate;
         end
         
-        % Konverter til tabel
+        % Convert to table
         table = array2table([avgMoves, avgHits, avgMisses, avgHitRatio, winRates], ...
-                           'VariableNames', {'Gns_Træk', 'Gns_Hits', 'Gns_Misses', ...
-                                          'Gns_HitRatio', 'Vinder_Procent'});
+                           'VariableNames', {'Avg_Moves', 'Avg_Hits', 'Avg_Misses', ...
+                                          'Avg_HitRatio', 'Win_Percentage'});
         
-        % Tilføj sværhedsgrad som første kolonne
-        table = addvars(table, labels', 'Before', 'Gns_Træk', 'NewVariableNames', {'Sværhedsgrad'});
+        % Add difficulty level as first column
+        table = addvars(table, labels', 'Before', 'Avg_Moves', 'NewVariableNames', {'Difficulty'});
         
-        % Vis tabel
-        figure('Name', 'Sammenligningstabel', 'Position', [400, 400, 700, 200]);
+        % Show table
+        figure('Name', 'Comparison Table', 'Position', [400, 400, 700, 200]);
         uitable('Data', table{:,:}, 'ColumnName', table.Properties.VariableNames, ...
                'RowName', {}, 'Units', 'Normalized', 'Position', [0, 0, 1, 1]);
     end
 
     function showHelp(~, ~)
-        helpFig = figure('Name', 'Simuleringshjælp', 'Position', [400, 300, 500, 400], ...
+        helpFig = figure('Name', 'Simulation Help', 'Position', [400, 300, 500, 400], ...
                        'MenuBar', 'none', 'NumberTitle', 'off');
         
         helpText = {...
-            'BATTLESHIP SIMULATIONSMANAGER', '', ...
-            'Denne værktøj lader dig simulere Battleship-spil med forskellige sværhedsgrader.', '', ...
-            'SÅDAN BRUGES VÆRKTØJET:', '', ...
-            '1. Angiv antal simulationer for hver sværhedsgrad (f.eks. 100)', ...
-            '2. Vælg hvilke sværhedsgrader der skal testes', ...
-            '3. Vælg output-indstillinger:', ...
-            '   - "Vis plots under simulering" viser spilplader under simulering (langsomt)', ...
-            '   - "Vis opsummerende plots" viser statistiske plots efter simulering', ...
-            '   - "Gem resultater til workspace" gemmer data til videre analyse', ...
-            '4. Klik på "Kør simulationer" for at starte', '', ...
-            'RESULTATER:', '', ...
-            'Resultaterne omfatter:', ...
-            '- Gennemsnitligt antal træk for at vinde', ...
+            'BATTLESHIP SIMULATION MANAGER', '', ...
+            'This tool allows you to simulate Battleship games with different difficulty levels.', '', ...
+            'HOW TO USE THE TOOL:', '', ...
+            '1. Specify number of simulations for each difficulty level (e.g. 100)', ...
+            '2. Choose which difficulty levels to test', ...
+            '3. Select output options:', ...
+            '   - "Show plots during simulation" shows game boards during simulation (slow)', ...
+            '   - "Show summary plots" shows statistical plots after simulation', ...
+            '   - "Save results to workspace" saves data for further analysis', ...
+            '4. Click on "Run simulations" to start', '', ...
+            'RESULTS:', '', ...
+            'The results include:', ...
+            '- Average number of moves to win', ...
             '- Hit/miss ratio', ...
-            '- Vinder-procent', ...
-            '- Sammenligning mellem forskellige sværhedsgrader'};
+            '- Win percentage', ...
+            '- Comparison between different difficulty levels'};
         
         uicontrol('Parent', helpFig, 'Style', 'text', 'Position', [20, 20, 460, 350], ...
                  'String', helpText, 'HorizontalAlignment', 'left');

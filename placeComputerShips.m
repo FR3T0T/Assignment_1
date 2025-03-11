@@ -1,5 +1,5 @@
 function grid = placeComputerShips(grid, ships)
-% PLACECOMPUTERSHIPS - Automatisk placer computerens skibe på brættet
+% PLACECOMPUTERSHIPS - Automatically place computer ships on the board
 % Inputs:
 %   grid - 10x10 matrix to place ships on
 %   ships - Struct array with ship information

@@ -1,9 +1,9 @@
 function battleshipGUI()
-% BATTLESHIPGUI - Grafisk brugergrænseflade til Battleship-spillet
-% Dette er en GUI-version af battleship.m som bruger MATLAB's figure og
-% uicontrol komponenter til at skabe en interaktiv spiloplevelse.
+% BATTLESHIPGUI - Graphical user interface for the Battleship game
+% This is a GUI version of battleship.m that uses MATLAB's figure and
+% uicontrol components to create an interactive game experience.
     
-    % Initialiser spilledata
+    % Initialize game data
     gameData = struct();
     gameData.playerGrid = zeros(10, 10);
     gameData.computerGrid = zeros(10, 10);
@@ -18,67 +18,67 @@ function battleshipGUI()
     gameData.computerHits = [0, 0, 0]; % Hits on each computer ship
     gameData.playerTurn = true;
     
-    % Opret hovedfigur
+    % Create main figure
     fig = figure('Name', 'Battleship', 'Position', [100, 100, 1000, 600], ...
                  'MenuBar', 'none', 'NumberTitle', 'off', 'Color', [0.9 0.9 0.95], ...
                  'CloseRequestFcn', @closeGame);
     
-    % Gem gameData i figure
+    % Save gameData in figure
     setappdata(fig, 'gameData', gameData);
     
-    % Opret kontrolpanel
-    controlPanel = uipanel('Position', [0.02, 0.02, 0.2, 0.96], 'Title', 'Kontrolpanel', ...
+    % Create control panel
+    controlPanel = uipanel('Position', [0.02, 0.02, 0.2, 0.96], 'Title', 'Control Panel', ...
                           'BackgroundColor', [0.9 0.9 0.95]);
     
-    % Opret sværhedsgrad-selector
+    % Create difficulty selector
     uicontrol('Parent', controlPanel, 'Style', 'text', 'Position', [20, 520, 120, 20], ...
-              'String', 'Sværhedsgrad:', 'BackgroundColor', [0.9 0.9 0.95]);
+              'String', 'Difficulty:', 'BackgroundColor', [0.9 0.9 0.95]);
     difficultySelector = uicontrol('Parent', controlPanel, 'Style', 'popupmenu', ...
                                   'Position', [20, 490, 120, 25], ...
-                                  'String', {'Let', 'Medium', 'Svær'}, ...
+                                  'String', {'Easy', 'Medium', 'Hard'}, ...
                                   'Callback', @setDifficulty);
     
-    % Start spil-knap
+    % Start game button
     startButton = uicontrol('Parent', controlPanel, 'Style', 'pushbutton', ...
                            'Position', [20, 440, 120, 40], ...
-                           'String', 'Start Spil', 'Callback', @startGame);
+                           'String', 'Start Game', 'Callback', @startGame);
     
-    % Orientering-selector (til skibsplacering)
+    % Orientation selector (for ship placement)
     uicontrol('Parent', controlPanel, 'Style', 'text', 'Position', [20, 390, 120, 20], ...
-              'String', 'Orientering:', 'BackgroundColor', [0.9 0.9 0.95]);
+              'String', 'Orientation:', 'BackgroundColor', [0.9 0.9 0.95]);
     orientationSelector = uicontrol('Parent', controlPanel, 'Style', 'popupmenu', ...
                                    'Position', [20, 360, 120, 25], ...
-                                   'String', {'Vandret', 'Lodret'});
+                                   'String', {'Horizontal', 'Vertical'});
     
-    % Instruktioner-knap
+    % Instructions button
     instructionsButton = uicontrol('Parent', controlPanel, 'Style', 'pushbutton', ...
                                  'Position', [20, 310, 120, 30], ...
-                                 'String', 'Instruktioner', 'Callback', @showInstructions);
+                                 'String', 'Instructions', 'Callback', @showInstructions);
     
-    % Simulation-knap (NYT ELEMENT)
+    % Simulation button (NEW ELEMENT)
     simulationButton = uicontrol('Parent', controlPanel, 'Style', 'pushbutton', ...
                                'Position', [20, 260, 120, 30], ...
-                               'String', 'Køre Simulation', 'Callback', @runSimulation);
+                               'String', 'Run Simulation', 'Callback', @runSimulation);
     
-    % Statusfelt
+    % Status field
     statusText = uicontrol('Parent', controlPanel, 'Style', 'text', ...
                          'Position', [10, 50, 160, 200], ...
-                         'String', 'Vælg sværhedsgrad og klik på Start Spil', ...
+                         'String', 'Select difficulty and click Start Game', ...
                          'HorizontalAlignment', 'left', ...
                          'BackgroundColor', [0.9 0.9 0.95]);
     
-    % Opret spillebrætter som axes
+    % Create game boards as axes
     playerBoard = axes('Position', [0.25, 0.1, 0.35, 0.8]);
-    title('Dit bræt');
+    title('Your Board');
     
     enemyBoard = axes('Position', [0.65, 0.1, 0.35, 0.8]);
-    title('Modstanderens bræt');
+    title('Opponent''s Board');
     
-    % Tegn grid for begge brætter
+    % Draw grid for both boards
     drawGrid(playerBoard);
     drawGrid(enemyBoard);
     
-    % Gem UI-referencer til senere brug
+    % Save UI references for later use
     handles = struct();
     handles.fig = fig;
     handles.controlPanel = controlPanel;
@@ -88,16 +88,16 @@ function battleshipGUI()
     handles.statusText = statusText;
     handles.playerBoard = playerBoard;
     handles.enemyBoard = enemyBoard;
-    handles.simulationButton = simulationButton; % NYT ELEMENT
+    handles.simulationButton = simulationButton; % NEW ELEMENT
     setappdata(fig, 'handles', handles);
     
-    % Deaktiver fjendebræt indtil spillet er startet
+    % Disable enemy board until game is started
     set(enemyBoard, 'ButtonDownFcn', []);
     
-    % Set playerBoard til at håndtere placeringen af skibe
-    % Dette aktiveres efter spillet startes
+    % Set playerBoard to handle ship placement
+    % This is activated after the game starts
     set(playerBoard, 'ButtonDownFcn', []);
     
-    % Vis velkomstskærm
+    % Show welcome screen
     showWelcomeScreen(fig);
 end

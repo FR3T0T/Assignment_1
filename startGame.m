@@ -1,14 +1,14 @@
 function startGame(src, ~)
-% STARTGAME - Starter et nyt spil og nulstiller alle spildata
+% STARTGAME - Starts a new game and resets all game data
 % Inputs:
 %   src - Source handle for callback
     
-    % Start et nyt spil
+    % Start a new game
     fig = ancestor(src, 'figure');
     gameData = getappdata(fig, 'gameData');
     handles = getappdata(fig, 'handles');
     
-    % Nulstil spildatastrukturen
+    % Reset game data structure
     gameData.playerGrid = zeros(10, 10);
     gameData.computerGrid = zeros(10, 10);
     gameData.playerShots = zeros(10, 10);
@@ -22,20 +22,20 @@ function startGame(src, ~)
         gameData.ships(i).placed = false;
     end
     
-    % Opdater status
-    set(handles.statusText, 'String', sprintf('Placer dit %s (%d felter)\nVælg orientering og klik på dit bræt.', ...
+    % Update status
+    set(handles.statusText, 'String', sprintf('Place your %s (%d cells)\nSelect orientation and click on your board.', ...
                                              gameData.ships(1).name, gameData.ships(1).length));
     
-    % Opdater brætterne
+    % Update boards
     drawGrid(handles.playerBoard);
     drawGrid(handles.enemyBoard);
     
-    % Aktiver placeringsfunktion
+    % Activate placement function
     set(handles.playerBoard, 'ButtonDownFcn', @placeShip);
     
-    % Placer computerens skibe
+    % Place computer's ships
     gameData.computerGrid = placeComputerShips(gameData.computerGrid, gameData.ships);
     
-    % Gem opdateret spilledata
+    % Save updated game data
     setappdata(fig, 'gameData', gameData);
 end

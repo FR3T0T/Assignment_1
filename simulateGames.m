@@ -1,85 +1,85 @@
 function results = simulateGames(numSimulations, difficulty, simulationSpeed)
-% SIMULATEGAMES - Kører simulationer af Battleship-spil uden GUI
+% SIMULATEGAMES - Runs simulations of Battleship games without GUI
 % Inputs:
-%   numSimulations - Antal spil der skal simuleres
-%   difficulty - Sværhedsgrad (1=Let, 2=Medium, 3=Svær)
-%   simulationSpeed - Hastighed af simuleringen (1-10, hvor 10 er hurtigst)
+%   numSimulations - Number of games to simulate
+%   difficulty - Difficulty level (1=Easy, 2=Medium, 3=Hard)
+%   simulationSpeed - Speed of the simulation (1-10, where 10 is fastest)
 % Outputs:
-%   results - Struct med simuleringsresultater
+%   results - Struct with simulation results
     
-    % Håndter valgfri parameter
+    % Handle optional parameter
     if nargin < 3
-        simulationSpeed = 10; % Standard: Maksimal hastighed
+        simulationSpeed = 10; % Default: Maximum speed
     end
 
-    % Definer skibe (samme som i battleshipGUI.m)
+    % Define ships (same as in battleshipGUI.m)
     ships = struct('name', {'Battleship', 'Cruiser', 'Destroyer'}, ...
                   'length', {4, 3, 2}, 'placed', {true, true, true});
     
-    % Mål for det totale antal hits der er nødvendige
+    % Target for the total number of hits needed
     totalRequiredHits = sum([ships.length]);
     
-    % Forberedelse af datastrukturer til at gemme resultater
+    % Prepare data structures to store results
     results = struct();
     results.difficulty = difficulty;
-    results.difficultyNames = {'Let', 'Medium', 'Svær'};
+    results.difficultyNames = {'Easy', 'Medium', 'Hard'};
     results.difficultyName = results.difficultyNames{difficulty};
     results.totalMoves = zeros(numSimulations, 1);
     results.totalHits = zeros(numSimulations, 1);
     results.totalMisses = zeros(numSimulations, 1);
     results.hitRatio = zeros(numSimulations, 1);
     results.gameWon = zeros(numSimulations, 1);
-    results.numShots = cell(numSimulations, 1);  % For at gemme antal skud for hvert skib
+    results.numShots = cell(numSimulations, 1);  % To store number of shots for each ship
     
-    % Vis konsol fremgangsbar
-    fprintf('Simulerer %d spil med %s sværhedsgrad (hastighed: %d/10):\n', 
-           numSimulations, results.difficultyName, simulationSpeed);
+    % Show console progress bar
+    fprintf('Simulating %d games with %s difficulty (speed: %d/10):\n', ...
+       numSimulations, results.difficultyName, simulationSpeed);
     progress = 0;
     fprintf('[%s]', repmat(' ', 1, 50));
     fprintf('\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b');
     
-    % Opsæt batch-størrelse baseret på hastighed
-    batchSize = simulationSpeed^2; % Højere hastighed giver større batches
+    % Set up batch size based on speed
+    batchSize = simulationSpeed^2; % Higher speed gives larger batches
     
-    % Kør simulationer i batches for at øge hastigheden
+    % Run simulations in batches to increase speed
     sim = 1;
     while sim <= numSimulations
-        % Bestem batch-størrelse
+        % Determine batch size
         currentBatchSize = min(batchSize, numSimulations - sim + 1);
         batchEnd = sim + currentBatchSize - 1;
         
-        % Opdater fremgangsbar
+        % Update progress bar
         if floor(sim/numSimulations*50) > progress
             progress = floor(sim/numSimulations*50);
             fprintf('\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b');
             fprintf('[%s%s]', repmat('=', 1, progress), repmat(' ', 1, 50-progress));
         end
         
-        % Nulstil spildata for denne simulation
+        % Reset game data for this simulation
         playerGrid = zeros(10, 10);
         computerShots = zeros(10, 10);
         playerHits = [0, 0, 0];
         
-        % Placer skibe tilfældigt for "spilleren" (som computeren spiller mod)
+        % Place ships randomly for the "player" (which the computer plays against)
         playerGrid = placeComputerShips(playerGrid, ships);
         
-        % Gem hits og misses for denne simulation
+        % Store hits and misses for this simulation
         hits = 0;
         misses = 0;
         moves = 0;
         gameWon = false;
         
-        % Hold styr på antal skud for hvert skib
+        % Keep track of number of shots for each ship
         shotsByShipType = zeros(1, length(ships));
         
-        % Simuler spillet (computeren skyder mod den tilfældige spillerplade)
+        % Simulate the game (computer shoots at the random player board)
         while true
             moves = moves + 1;
             
-            % Lad computeren skyde
+            % Let the computer shoot
             [row, col] = getComputerShot(computerShots, playerGrid, difficulty);
             
-            % Registrer resultat
+            % Register result
             if playerGrid(row, col) > 0
                 % Hit
                 shipType = playerGrid(row, col);
@@ -101,13 +101,13 @@ function results = simulateGames(numSimulations, difficulty, simulationSpeed)
                 break;
             end
             
-            % Sikkerhedscheck: Afbryd hvis for mange træk (undgå uendelige løkker)
+            % Safety check: Abort if too many moves (avoid infinite loops)
             if moves > 200
                 break;
             end
         end
         
-        % Gem resultater
+        % Save results
         results.totalMoves(sim) = moves;
         results.totalHits(sim) = hits;
         results.totalMisses(sim) = misses;
@@ -116,16 +116,16 @@ function results = simulateGames(numSimulations, difficulty, simulationSpeed)
         results.numShots{sim} = shotsByShipType;
     end
     
-    fprintf('\nSimulering gennemført!\n');
+    fprintf('\nSimulation completed!\n');
     
-    % Beregn aggregate statistikker
+    % Calculate aggregate statistics
     results.avgMoves = mean(results.totalMoves);
     results.avgHits = mean(results.totalHits);
     results.avgMisses = mean(results.totalMisses);
     results.avgHitRatio = mean(results.hitRatio);
     results.winRate = mean(results.gameWon) * 100;
     
-    % Beregn gennemsnitligt antal skud per skibstype
+    % Calculate average number of shots per ship type
     shipTypeShots = zeros(length(ships), 1);
     for i = 1:numSimulations
         for j = 1:length(ships)
@@ -134,17 +134,17 @@ function results = simulateGames(numSimulations, difficulty, simulationSpeed)
     end
     results.avgShotsByShipType = shipTypeShots / numSimulations;
     
-    % Vis opsummering
-    fprintf('\nOpsummering for %s sværhedsgrad:\n', results.difficultyName);
-    fprintf('Gennemsnitligt antal træk: %.2f\n', results.avgMoves);
-    fprintf('Gennemsnitligt antal hits: %.2f\n', results.avgHits);
-    fprintf('Gennemsnitligt antal misses: %.2f\n', results.avgMisses);
-    fprintf('Gennemsnitlig hit-ratio: %.2f%%\n', results.avgHitRatio*100);
-    fprintf('Vinder-rate: %.2f%%\n', results.winRate);
+    % Show summary
+    fprintf('\nSummary for %s difficulty:\n', results.difficultyName);
+    fprintf('Average number of moves: %.2f\n', results.avgMoves);
+    fprintf('Average number of hits: %.2f\n', results.avgHits);
+    fprintf('Average number of misses: %.2f\n', results.avgMisses);
+    fprintf('Average hit ratio: %.2f%%\n', results.avgHitRatio*100);
+    fprintf('Win rate: %.2f%%\n', results.winRate);
     
-    % Konverter til tabel for nem adgang
+    % Convert to table for easy access
     results.table = table(results.totalMoves, results.totalHits, results.totalMisses, ...
                          results.hitRatio*100, results.gameWon, ...
-                         'VariableNames', {'AntalTræk', 'AntalHits', 'AntalMisses', ...
-                                          'HitRatio_Procent', 'SpilVundet'});
+                         'VariableNames', {'NumberOfMoves', 'NumberOfHits', 'NumberOfMisses', ...
+                                          'HitRatio_Percent', 'GameWon'});
 end

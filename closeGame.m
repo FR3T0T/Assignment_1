@@ -1,13 +1,13 @@
 function closeGame(src, ~)
-% CLOSEGAME - Håndterer lukning af spillet med bekræftelsesdialog
+% CLOSEGAME - Handles closing of the game with confirmation dialog
 % Inputs:
 %   src - Source handle for callback
     
-    % Bekræft afslutning af spil
-    choice = questdlg('Er du sikker på, at du vil afslutte spillet?', ...
-        'Afslut Battleship', 'Ja', 'Nej', 'Nej');
+    % Confirm game exit
+    choice = questdlg('Are you sure you want to exit the game?', ...
+        'Exit Battleship', 'Yes', 'No', 'No');
     
-    if strcmp(choice, 'Ja')
+    if strcmp(choice, 'Yes')
         delete(src);
     end
 end

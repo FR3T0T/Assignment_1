@@ -1,8 +1,8 @@
 function restartGame(startButton, resultPanel)
-% RESTARTGAME - Hjælpefunktion til at fjerne resultatpanelet og starte et nyt spil
+% RESTARTGAME - Helper function to remove the result panel and start a new game
 % Inputs:
-%   startButton - Handle til startknappen
-%   resultPanel - Handle til resultatpanelet
+% startButton - Handle to the start button
+% resultPanel - Handle to the result panel
     
     delete(resultPanel);
     startGame(startButton, []);

@@ -1,57 +1,57 @@
 function analyzeSimulations(numSimulations, simulationSpeed)
-% ANALYZESIMULATIONS - Kører og sammenligner simulationer for alle sværhedsgrader
+% ANALYZESIMULATIONS - Runs and compares simulations for all difficulty levels
 % Inputs:
-%   numSimulations - Antal simulationer der skal køres per sværhedsgrad
-%   simulationSpeed - Hastighed af simuleringen (1-10, hvor 10 er hurtigst)
+%   numSimulations - Number of simulations to run per difficulty level
+%   simulationSpeed - Speed of the simulation (1-10, where 10 is fastest)
 
     if nargin < 1
         numSimulations = 100;
     end
     
     if nargin < 2
-        simulationSpeed = 10; % Standard: Maksimal hastighed
+        simulationSpeed = 10; % Default: Maximum speed
     end
     
-    fprintf('Analyserer Battleship AI med %d simulationer for hver sværhedsgrad (hastighed: %d)...\n', 
+    fprintf('Analyzing Battleship AI with %d simulations for each difficulty level (speed: %d)...\n', 
            numSimulations, simulationSpeed);
     
-    % Kør simulationer for hver sværhedsgrad
+    % Run simulations for each difficulty level
     easyResults = simulateGames(numSimulations, 1, simulationSpeed);
     mediumResults = simulateGames(numSimulations, 2, simulationSpeed);
     hardResults = simulateGames(numSimulations, 3, simulationSpeed);
     
-    % Sammenlign resultater med box plots
-    figure('Name', 'Sammenligning af sværhedsgrader', 'Position', [100, 100, 1200, 800]);
+    % Compare results with box plots
+    figure('Name', 'Comparison of difficulty levels', 'Position', [100, 100, 1200, 800]);
     
-    % Sammensæt data fra alle sværhedsgrader
+    % Combine data from all difficulty levels
     allMoves = [easyResults.totalMoves; mediumResults.totalMoves; hardResults.totalMoves];
     allHitRatios = [easyResults.hitRatio; mediumResults.hitRatio; hardResults.hitRatio];
-    groupLabels = [repmat({'Let'}, numSimulations, 1); ...
+    groupLabels = [repmat({'Easy'}, numSimulations, 1); ...
                   repmat({'Medium'}, numSimulations, 1); ...
-                  repmat({'Svær'}, numSimulations, 1)];
+                  repmat({'Hard'}, numSimulations, 1)];
     
-    % Plot 1: Antal træk
+    % Plot 1: Number of moves
     subplot(2, 2, 1);
     boxplot(allMoves, groupLabels);
-    title('Sammenligning af antal træk');
-    ylabel('Antal træk');
+    title('Comparison of number of moves');
+    ylabel('Number of moves');
     
     % Plot 2: Hit ratio
     subplot(2, 2, 2);
     boxplot(allHitRatios, groupLabels);
-    title('Sammenligning af hit ratio');
+    title('Comparison of hit ratio');
     ylabel('Hit ratio');
     
-    % Plot 3: Gennemsnitlige værdier
+    % Plot 3: Average values
     subplot(2, 2, 3);
     avgData = [easyResults.avgMoves, mediumResults.avgMoves, hardResults.avgMoves; ...
               easyResults.avgHitRatio*100, mediumResults.avgHitRatio*100, hardResults.avgHitRatio*100];
     bar(avgData);
-    title('Gennemsnitlige værdier');
-    set(gca, 'XTickLabel', {'Antal træk', 'Hit ratio (%)'});
-    legend({'Let', 'Medium', 'Svær'}, 'Location', 'northwest');
+    title('Average values');
+    set(gca, 'XTickLabel', {'Number of moves', 'Hit ratio (%)'});
+    legend({'Easy', 'Medium', 'Hard'}, 'Location', 'northwest');
     
-    % Plot 4: Gennemsnitligt antal træk for at vinde
+    % Plot 4: Average number of moves to win
     subplot(2, 2, 4);
     winningMovesEasy = easyResults.totalMoves(easyResults.gameWon == 1);
     winningMovesMedium = mediumResults.totalMoves(mediumResults.gameWon == 1);
@@ -59,30 +59,30 @@ function analyzeSimulations(numSimulations, simulationSpeed)
     
     avgWinningMoves = [mean(winningMovesEasy), mean(winningMovesMedium), mean(winningMovesHard)];
     bar(avgWinningMoves);
-    title('Gennemsnitligt antal træk for at vinde');
-    set(gca, 'XTickLabel', {'Let', 'Medium', 'Svær'});
-    ylabel('Antal træk');
+    title('Average number of moves to win');
+    set(gca, 'XTickLabel', {'Easy', 'Medium', 'Hard'});
+    ylabel('Number of moves');
     
-    % Opret tabel med sammenlignende statistik
+    % Create table with comparative statistics
     comparisonTable = table(...
-        {'Let'; 'Medium'; 'Svær'}, ...
+        {'Easy'; 'Medium'; 'Hard'}, ...
         [easyResults.avgMoves; mediumResults.avgMoves; hardResults.avgMoves], ...
         [easyResults.avgHits; mediumResults.avgHits; hardResults.avgHits], ...
         [easyResults.avgMisses; mediumResults.avgMisses; hardResults.avgMisses], ...
         [easyResults.avgHitRatio*100; mediumResults.avgHitRatio*100; hardResults.avgHitRatio*100], ...
         [easyResults.winRate; mediumResults.winRate; hardResults.winRate], ...
-        'VariableNames', {'Sværhedsgrad', 'Gns_Træk', 'Gns_Hits', 'Gns_Misses', 'Gns_HitRatio', 'Vinder_Procent'});
+        'VariableNames', {'Difficulty', 'Avg_Moves', 'Avg_Hits', 'Avg_Misses', 'Avg_HitRatio', 'Win_Percent'});
     
-    % Vis tabel
-    fprintf('\nSammenligning af sværhedsgrader:\n');
+    % Display table
+    fprintf('\nComparison of difficulty levels:\n');
     disp(comparisonTable);
     
-    % Gem data i workspace
+    % Save data to workspace
     assignin('base', 'battleshipEasyResults', easyResults);
     assignin('base', 'battleshipMediumResults', mediumResults);
     assignin('base', 'battleshipHardResults', hardResults);
     assignin('base', 'battleshipComparisonTable', comparisonTable);
     
-    fprintf('\nAlle resultater er gemt i arbejdsområdet.\n');
-    fprintf('Brug variablerne: battleshipEasyResults, battleshipMediumResults, battleshipHardResults, og battleshipComparisonTable.\n');
+    fprintf('\nAll results have been saved to the workspace.\n');
+    fprintf('Use the variables: battleshipEasyResults, battleshipMediumResults, battleshipHardResults, and battleshipComparisonTable.\n');
 end

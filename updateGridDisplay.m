@@ -1,5 +1,5 @@
 function updateGridDisplay(ax, shipGrid, shotGrid, showShips)
-% UPDATEGRID - Opdater gridvisningen baseret på spillets tilstand
+% UPDATEGRID - Update grid display based on game state
 % Inputs:
 %   ax - Axes object to update
 %   shipGrid - 10x10 matrix with ship placements
@@ -9,26 +9,26 @@ function updateGridDisplay(ax, shipGrid, shotGrid, showShips)
     cla(ax);
     hold(ax, 'on');
     
-    % Tegn grundlæggende grid
+    % Draw basic grid
     axis(ax, [0 10 0 10]);
     axis(ax, 'square');
     
-    % Tegn gridlinjer
+    % Draw grid lines
     for i = 0:10
         line(ax, [i i], [0 10], 'Color', 'k');
         line(ax, [0 10], [i i], 'Color', 'k');
     end
     
-    % Tilføj labels
+    % Add labels
     for i = 1:10
         text(ax, i-0.5, -0.3, num2str(i), 'HorizontalAlignment', 'center');
         text(ax, -0.3, i-0.5, char('A'+i-1), 'HorizontalAlignment', 'center');
     end
     
-    % Fjern standard akseticks
+    % Remove standard axis ticks
     set(ax, 'XTick', [], 'YTick', []);
     
-    % Visualiser skibe, hits og misses
+    % Visualize ships, hits and misses
     for i = 1:10
         for j = 1:10
             if shotGrid(i, j) == 2

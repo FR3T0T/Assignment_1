@@ -1,5 +1,5 @@
 function valid = validateShipPlacement(grid, row, col, orientation, shipLength)
-% VALIDATESHIPPLACEMENT - Valider om et skib kan placeres på det angivne sted
+% VALIDATESHIPPLACEMENT - Validate if a ship can be placed at the specified location
 % Inputs:
 %   grid - 10x10 matrix with current ship placements
 %   row - Row index (1-10)
@@ -9,25 +9,25 @@ function valid = validateShipPlacement(grid, row, col, orientation, shipLength)
 % Outputs:
 %   valid - Boolean, true if placement is valid
     
-    % Tjek om skibet passer på brættet
-    if orientation == 1 && col + shipLength - 1 > 10  % Vandret
+    % Check if the ship fits on the board
+    if orientation == 1 && col + shipLength - 1 > 10  % Horizontal
         valid = false;
         return;
-    elseif orientation == 2 && row + shipLength - 1 > 10  % Lodret
+    elseif orientation == 2 && row + shipLength - 1 > 10  % Vertical
         valid = false;
         return;
     end
     
-    % Tjek om felterne er ledige
+    % Check if the fields are available
     valid = true;
-    if orientation == 1  % Vandret
+    if orientation == 1  % Horizontal
         for i = 0:(shipLength-1)
             if grid(row, col+i) ~= 0
                 valid = false;
                 return;
             end
         end
-    else  % Lodret
+    else  % Vertical
         for i = 0:(shipLength-1)
             if grid(row+i, col) ~= 0
                 valid = false;
