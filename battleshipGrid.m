@@ -22,15 +22,16 @@ function drawGrid(ax)
     cla(ax);
     hold(ax, 'on');
     
-    % Tilføj en klikbar baggrund
-    rectangle('Parent', ax, 'Position', [0 0 10 10], 'FaceColor', 'none', 'EdgeColor', 'none', 'PickableParts', 'all');
+    % Sæt axes til at være klikbart
+    set(ax, 'PickableParts', 'all', 'HitTest', 'on');
+    
+    % Tilføj en klikbar baggrund - VIGTIG for klik-detection
+    h = patch([0 10 10 0], [0 0 10 10], [0.96 0.98 1], 'Parent', ax);
+    set(h, 'FaceAlpha', 0.1, 'EdgeColor', 'none', 'PickableParts', 'all', 'ButtonDownFcn', get(ax, 'ButtonDownFcn'));
     
     % Sæt akseegenskaber
     axis(ax, [0 10 0 10]);
     axis(ax, 'square');
-    
-    % Farvelæg baggrunden for bedre kontrast
-    fill(ax, [0 10 10 0], [0 0 10 10], [0.96 0.98 1], 'EdgeColor', 'none');
     
     % Tegn gridlinjer med lidt skygge
     for i = 0:10
@@ -55,15 +56,16 @@ function updateGridDisplay(ax, shipGrid, shotGrid, showShips)
     cla(ax);
     hold(ax, 'on');
     
-    % Tilføj en klikbar baggrund
-    rectangle('Parent', ax, 'Position', [0 0 10 10], 'FaceColor', 'none', 'EdgeColor', 'none', 'PickableParts', 'all');
+    % Sæt axes til at være klikbart
+    set(ax, 'PickableParts', 'all', 'HitTest', 'on');
+    
+    % Tilføj en klikbar baggrund - VIGTIG for klik-detection
+    h = patch([0 10 10 0], [0 0 10 10], [0.96 0.98 1], 'Parent', ax);
+    set(h, 'FaceAlpha', 0.1, 'EdgeColor', 'none', 'PickableParts', 'all', 'ButtonDownFcn', get(ax, 'ButtonDownFcn'));
     
     % Tegn grundlæggende grid
     axis(ax, [0 10 0 10]);
     axis(ax, 'square');
-    
-    % Farvelæg baggrunden for bedre kontrast
-    fill([0 10 10 0], [0 0 10 10], [0.96 0.98 1], 'EdgeColor', 'none');
     
     % Tegn gridlinjer med lidt skygge
     for i = 0:10

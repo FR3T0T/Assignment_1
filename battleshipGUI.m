@@ -178,14 +178,11 @@ function startGame(src, ~)
         gameData.ships(i).placed = false;
     end
 
-    % Sæt en direkte placeringsfunktion på brættet
-    set(handles.playerBoard, 'ButtonDownFcn', @placeShipOnBoard);
-    
     % Opdater status
     shipName = gameData.ships(1).name;
     shipLength = gameData.ships(1).length;
     set(handles.statusText, 'String', sprintf('Placer dit %s\n(%d felter)\nVælg orientering og \nklik på dit bræt.', ...
-                                           shipName, shipLength));
+                                          shipName, shipLength));
     
     % Opdater spillestatus
     set(handles.gameStatusBar, 'String', 'PLACER SKIBE: Vælg orientering og placer dine skibe');
@@ -199,6 +196,99 @@ function startGame(src, ~)
     
     % Placer computerens skibe
     gameData.computerGrid = battleshipAI('placeComputerShips', gameData.computerGrid, gameData.ships);
+    
+    % Sæt placeShip funktion på brættet - VIGTIGT at dette gøres EFTER opdatering af brættet
+    disp('Sætter placeShipOnBoard funktion på brættet');
+    drawnow; % Force update før vi sætter callback
+    set(handles.playerBoard, 'ButtonDownFcn', @placeShipOnBoard);
+    disp('PlaceShipOnBoard funktion er sat på brættet');
+    
+    % Gem opdateret spilledata
+    setappdata(fig, 'gameData', gameData);
+end
+
+function placeShipOnBoard(src, ~)
+    % Håndterer direkte skibsplacering på brættet
+    disp('Klik modtaget på brættet!'); % Debug info
+    
+    fig = ancestor(src, 'figure');
+    gameData = getappdata(fig, 'gameData');
+    handles = getappdata(fig, 'handles');
+    
+    % Få koordinater fra klik
+    coords = get(src, 'CurrentPoint');
+    col = floor(coords(1,1)) + 1;
+    row = floor(coords(1,2)) + 1;
+    disp(['Klikket på position: (' num2str(row) ', ' num2str(col) ')']);
+    
+    % Tjek om klikket er inden for brættet
+    if col < 1 || col > 10 || row < 1 || row > 10
+        disp('Ugyldigt klik: Uden for brættet');
+        return;
+    end
+    
+    % Hent orientering og skibslængde
+    orientation = get(handles.orientationSelector, 'Value');
+    currentShip = gameData.currentShip;
+    shipLength = gameData.ships(currentShip).length;
+    
+    % Tjek om placeringen er gyldig
+    valid = validateShipPlacement(gameData.playerGrid, row, col, orientation, shipLength);
+    
+    if valid
+        disp('Gyldig placering - placerer skib');
+        % Placer skibet
+        if orientation == 1  % Vandret
+            for i = 0:(shipLength-1)
+                gameData.playerGrid(row, col+i) = currentShip;
+            end
+        else  % Lodret
+            for i = 0:(shipLength-1)
+                gameData.playerGrid(row+i, col) = currentShip;
+            end
+        end
+        
+        % Marker skibet som placeret og opdater visning
+        gameData.ships(currentShip).placed = true;
+        battleshipGrid('updateDisplay', handles.playerBoard, gameData.playerGrid, gameData.computerShots, true);
+        
+        % Sæt ButtonDownFcn igen efter opdatering af grid
+        set(handles.playerBoard, 'ButtonDownFcn', @placeShipOnBoard);
+        
+        % Fortsæt til næste skib eller start spillet
+        if currentShip < length(gameData.ships)
+            gameData.currentShip = currentShip + 1;
+            shipName = gameData.ships(gameData.currentShip).name;
+            shipLength = gameData.ships(gameData.currentShip).length;
+            
+            % Opdater instruktioner og titel
+            set(handles.statusText, 'String', sprintf('Placer dit %s\n(%d felter)\nVælg orientering og \nklik på dit bræt.', shipName, shipLength));
+            title(handles.playerBoard, sprintf('Dit bræt - Placer %s (%d felter)', shipName, shipLength), 'FontWeight', 'bold', 'FontSize', 12, 'Color', [0.2 0.4 0.8]);
+            
+        else
+            disp('Alle skibe placeret. Starter spillet!');
+            gameData.gameState = 'playing';
+            
+            % Opdater UI for spillefasen
+            set(handles.statusText, 'String', 'Alle skibe placeret!\nKlik på modstanderens bræt for at skyde.');
+            set(handles.gameStatusBar, 'String', 'DIN TUR: Klik på modstanderens bræt for at skyde');
+            title(handles.playerBoard, 'Dit bræt', 'FontWeight', 'bold', 'FontSize', 12);
+            
+            % Aktiver fjendebræt til at modtage skud
+            set(handles.enemyBoard, 'ButtonDownFcn', @(src,event) battleshipLogic('fireShot', src, event));
+            set(handles.playerBoard, 'ButtonDownFcn', []);
+        end
+    else
+        disp('Ugyldig placering - prøv igen');
+        % Vis fejlmeddelelse ved ugyldig placering
+        title(handles.playerBoard, 'Ugyldig placering! Prøv igen.', 'FontWeight', 'bold', 'FontSize', 12, 'Color', 'red');
+        % Nulstil titlen efter kort tid
+        t = timer('ExecutionMode', 'singleShot', 'StartDelay', 1.5, ...
+                 'TimerFcn', @(~,~) title(handles.playerBoard, sprintf('Dit bræt - Placer %s (%d felter)', ...
+                                                                     gameData.ships(currentShip).name, shipLength), ...
+                                         'FontWeight', 'bold', 'FontSize', 12, 'Color', [0.2 0.4 0.8]));
+        start(t);
+    end
     
     % Gem opdateret spilledata
     setappdata(fig, 'gameData', gameData);
@@ -348,4 +438,75 @@ function closeGame(src, ~)
     if strcmp(choice, 'Ja')
         delete(src);
     end
+end
+
+function test_click_handler()
+% Tilføj denne funktion til enden af battleshipGUI.m fil
+% Kald den fra kommandovinduet efter at have startet spillet ved at skrive:
+% test_click_handler
+%
+% Denne funktion vil direkte sætte en klik-handler på spillebrættet
+% for at teste om der er problemer med klik-detektion
+
+    % Find figur og håndtere
+    fig = findobj('Type', 'figure', 'Name', 'Battleship');
+    if isempty(fig)
+        disp('Ingen Battleship spil fundet! Start battleshipGUI først.');
+        return;
+    end
+    
+    handles = getappdata(fig, 'gameData');
+    if isempty(handles)
+        disp('Kunne ikke finde gameData. Prøver at finde brættet direkte...');
+        
+        % Find axerne direkte
+        ax = findobj(fig, 'Type', 'axes');
+        if length(ax) >= 2
+            playerBoard = ax(1);
+        else
+            disp('Kunne ikke finde spillebrættet!');
+            return;
+        end
+    else
+        handles = getappdata(fig, 'handles');
+        playerBoard = handles.playerBoard;
+    end
+    
+    % Slet alt indhold og tegn en ny baggrund for at forbedre klikbarhed
+    cla(playerBoard);
+    set(playerBoard, 'ButtonDownFcn', @test_click, 'PickableParts', 'all', 'HitTest', 'on');
+    
+    % Tegn en baggrund der er sikker på at fange klik
+    hold(playerBoard, 'on');
+    h = patch([0 10 10 0], [0 0 10 10], [0.8 0.9 1], 'Parent', playerBoard);
+    set(h, 'FaceAlpha', 0.5, 'EdgeColor', 'blue', 'LineWidth', 2, 'ButtonDownFcn', @test_click);
+    
+    % Tilføj forklarende tekst
+    text(5, 5, 'Klik hvor som helst på dette bræt', 'HorizontalAlignment', 'center', 'FontWeight', 'bold', 'Parent', playerBoard);
+    
+    hold(playerBoard, 'off');
+    
+    % Debug info
+    disp('Direkte klik-handler er nu sat på venstre bræt.');
+    disp('Prøv at klikke på det blå felt for at teste om klik detekteres.');
+end
+
+function test_click(src, ~)
+    % Få koordinater
+    ax = gca;
+    point = get(ax, 'CurrentPoint');
+    x = point(1,1);
+    y = point(1,2);
+    
+    % Vis klik-position
+    disp('----------------------');
+    disp('KLIK DETEKTERET!');
+    disp(['Position: (' num2str(x) ', ' num2str(y) ')']);
+    disp('----------------------');
+    
+    % Tilføj markør ved klik-position
+    hold(ax, 'on');
+    plot(x, y, 'ro', 'MarkerSize', 15, 'MarkerFaceColor', 'red');
+    text(x, y+0.5, 'Klik!', 'Color', 'red', 'FontWeight', 'bold', 'HorizontalAlignment', 'center');
+    hold(ax, 'off');
 end
