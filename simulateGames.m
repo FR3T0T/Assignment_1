@@ -1,10 +1,16 @@
-function results = simulateGames(numSimulations, difficulty)
+function results = simulateGames(numSimulations, difficulty, simulationSpeed)
 % SIMULATEGAMES - Kører simulationer af Battleship-spil uden GUI
 % Inputs:
 %   numSimulations - Antal spil der skal simuleres
 %   difficulty - Sværhedsgrad (1=Let, 2=Medium, 3=Svær)
+%   simulationSpeed - Hastighed af simuleringen (1-10, hvor 10 er hurtigst)
 % Outputs:
 %   results - Struct med simuleringsresultater
+    
+    % Håndter valgfri parameter
+    if nargin < 3
+        simulationSpeed = 10; % Standard: Maksimal hastighed
+    end
 
     % Definer skibe (samme som i battleshipGUI.m)
     ships = struct('name', {'Battleship', 'Cruiser', 'Destroyer'}, ...
@@ -26,13 +32,22 @@ function results = simulateGames(numSimulations, difficulty)
     results.numShots = cell(numSimulations, 1);  % For at gemme antal skud for hvert skib
     
     % Vis konsol fremgangsbar
-    fprintf('Simulerer %d spil med %s sværhedsgrad:\n', numSimulations, results.difficultyName);
+    fprintf('Simulerer %d spil med %s sværhedsgrad (hastighed: %d/10):\n', 
+           numSimulations, results.difficultyName, simulationSpeed);
     progress = 0;
     fprintf('[%s]', repmat(' ', 1, 50));
     fprintf('\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b');
     
-    % Kør simulationer
-    for sim = 1:numSimulations
+    % Opsæt batch-størrelse baseret på hastighed
+    batchSize = simulationSpeed^2; % Højere hastighed giver større batches
+    
+    % Kør simulationer i batches for at øge hastigheden
+    sim = 1;
+    while sim <= numSimulations
+        % Bestem batch-størrelse
+        currentBatchSize = min(batchSize, numSimulations - sim + 1);
+        batchEnd = sim + currentBatchSize - 1;
+        
         % Opdater fremgangsbar
         if floor(sim/numSimulations*50) > progress
             progress = floor(sim/numSimulations*50);

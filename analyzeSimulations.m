@@ -1,18 +1,24 @@
-function analyzeSimulations(numSimulations)
+function analyzeSimulations(numSimulations, simulationSpeed)
 % ANALYZESIMULATIONS - Kører og sammenligner simulationer for alle sværhedsgrader
 % Inputs:
 %   numSimulations - Antal simulationer der skal køres per sværhedsgrad
+%   simulationSpeed - Hastighed af simuleringen (1-10, hvor 10 er hurtigst)
 
     if nargin < 1
         numSimulations = 100;
     end
     
-    fprintf('Analyserer Battleship AI med %d simulationer for hver sværhedsgrad...\n', numSimulations);
+    if nargin < 2
+        simulationSpeed = 10; % Standard: Maksimal hastighed
+    end
+    
+    fprintf('Analyserer Battleship AI med %d simulationer for hver sværhedsgrad (hastighed: %d)...\n', 
+           numSimulations, simulationSpeed);
     
     % Kør simulationer for hver sværhedsgrad
-    easyResults = simulateGames(numSimulations, 1);
-    mediumResults = simulateGames(numSimulations, 2);
-    hardResults = simulateGames(numSimulations, 3);
+    easyResults = simulateGames(numSimulations, 1, simulationSpeed);
+    mediumResults = simulateGames(numSimulations, 2, simulationSpeed);
+    hardResults = simulateGames(numSimulations, 3, simulationSpeed);
     
     % Sammenlign resultater med box plots
     figure('Name', 'Sammenligning af sværhedsgrader', 'Position', [100, 100, 1200, 800]);

@@ -11,19 +11,24 @@ function runSimulation(src, ~)
     difficulty = gameData.difficulty;
     difficultyNames = {'Let', 'Medium', 'Svær'};
     
-    % Spørg om antal simulationer
-    answer = inputdlg({'Antal simulationer:', 'Vis grafisk? (1=ja, 0=nej)'}, ...
-                     'Simulationsindstillinger', 1, {'100', '0'});
+    % Spørg om antal simulationer og hastighed
+    answer = inputdlg({'Antal simulationer:', 'Vis grafisk? (1=ja, 0=nej)', 'Simulationshastighed (1-10, hvor 10 er hurtigst)'}, ...
+                     'Simulationsindstillinger', 1, {'100', '0', '10'});
     if isempty(answer)
         return;
     end
     
     numSimulations = str2double(answer{1});
     showGraphics = str2double(answer{2}) == 1;
+    simulationSpeed = str2double(answer{3});
+    
+    % Begræns hastigheden til mellem 1 og 10
+    simulationSpeed = max(1, min(10, simulationSpeed));
     
     % Opret simulationspanel til at vise fremgang
     simPanel = uipanel('Parent', fig, 'Position', [0.3, 0.4, 0.4, 0.2], ...
-        'Title', sprintf('Kører %d simulationer (%s sværhedsgrad)', numSimulations, difficultyNames{difficulty}), ...
+        'Title', sprintf('Kører %d simulationer (%s sværhedsgrad, hastighed: %d/10)', 
+                       numSimulations, difficultyNames{difficulty}, simulationSpeed), ...
         'FontSize', 12, 'BackgroundColor', [0.95 0.95 1]);
     
     statusText = uicontrol('Parent', simPanel, 'Style', 'text', ...
@@ -97,11 +102,13 @@ function runSimulation(src, ~)
                 misses = misses + 1;
             end
             
-            % Opdater grafik hvis det er angivet
+            % Opdater grafik hvis det er angivet, men uden pauser
             if showGraphics
                 updateGridDisplay(handles.playerBoard, simData.playerGrid, simData.computerShots, true);
-                drawnow;
-                pause(0.01);  % Kort pause for at grafik kan ses
+                % Kun opdater skærmen hver 10. træk for at øge hastigheden
+                if mod(moves, 10) == 0
+                    drawnow;
+                end
             end
             
             % Check for victory

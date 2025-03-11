@@ -15,6 +15,20 @@ function simulationManager()
     
     numSimsEdit = uicontrol('Parent', mainPanel, 'Style', 'edit', 'Position', [230, 300, 100, 25], ...
                           'String', '100');
+                          
+    % Simulation speed
+    uicontrol('Parent', mainPanel, 'Style', 'text', 'Position', [20, 270, 200, 20], ...
+             'String', 'Simulationshastighed (1-10):', 'HorizontalAlignment', 'left');
+             
+    speedSlider = uicontrol('Parent', mainPanel, 'Style', 'slider', 'Position', [230, 270, 100, 25], ...
+                           'Min', 1, 'Max', 10, 'Value', 10, 'SliderStep', [0.1 0.1]);
+                           
+    speedText = uicontrol('Parent', mainPanel, 'Style', 'text', 'Position', [340, 270, 30, 20], ...
+                         'String', '10');
+                         
+    % Update speed text when slider changes
+    addlistener(speedSlider, 'Value', 'PostSet', @(src,evt) set(speedText, 'String', ...
+               num2str(round(get(speedSlider, 'Value')))));
     
     % Difficulty level checkboxes
     diffPanel = uipanel('Parent', mainPanel, 'Position', [0.05, 0.6, 0.9, 0.25], ...
@@ -60,6 +74,7 @@ function simulationManager()
         showPlots = get(plotCheck, 'Value');
         showSummary = get(summaryCheck, 'Value');
         saveToWorkspace = get(saveCheck, 'Value');
+        simulationSpeed = round(get(speedSlider, 'Value'));
         
         % Valider antal simulationer
         if isnan(numSims) || numSims <= 0 || numSims > 10000
@@ -81,9 +96,9 @@ function simulationManager()
         % Kør simulationerne
         try
             if runEasy
-                set(statusText, 'String', 'Simulerer LET sværhedsgrad...');
+                set(statusText, 'String', sprintf('Simulerer LET sværhedsgrad (hastighed: %d/10)...', simulationSpeed));
                 drawnow;
-                easyResults = simulateGames(numSims, 1);
+                easyResults = simulateGames(numSims, 1, simulationSpeed);
                 allResults{end+1} = easyResults;
                 difficultyLabels{end+1} = 'Let';
                 
@@ -93,9 +108,9 @@ function simulationManager()
             end
             
             if runMedium
-                set(statusText, 'String', 'Simulerer MEDIUM sværhedsgrad...');
+                set(statusText, 'String', sprintf('Simulerer MEDIUM sværhedsgrad (hastighed: %d/10)...', simulationSpeed));
                 drawnow;
-                mediumResults = simulateGames(numSims, 2);
+                mediumResults = simulateGames(numSims, 2, simulationSpeed);
                 allResults{end+1} = mediumResults;
                 difficultyLabels{end+1} = 'Medium';
                 
@@ -105,9 +120,9 @@ function simulationManager()
             end
             
             if runHard
-                set(statusText, 'String', 'Simulerer SVÆR sværhedsgrad...');
+                set(statusText, 'String', sprintf('Simulerer SVÆR sværhedsgrad (hastighed: %d/10)...', simulationSpeed));
                 drawnow;
-                hardResults = simulateGames(numSims, 3);
+                hardResults = simulateGames(numSims, 3, simulationSpeed);
                 allResults{end+1} = hardResults;
                 difficultyLabels{end+1} = 'Svær';
                 
