@@ -27,7 +27,7 @@ function runSimulation(src, ~)
     
     % Opret simulationspanel til at vise fremgang
     simPanel = uipanel('Parent', fig, 'Position', [0.3, 0.4, 0.4, 0.2], ...
-        'Title', sprintf('Kører %d simulationer (%s sværhedsgrad, hastighed: %d/10)', 
+        'Title', sprintf('Kører %d simulationer (%s sværhedsgrad, hastighed: %d/10)', ...
                        numSimulations, difficultyNames{difficulty}, simulationSpeed), ...
         'FontSize', 12, 'BackgroundColor', [0.95 0.95 1]);
     
@@ -54,81 +54,113 @@ function runSimulation(src, ~)
     % Mål for det totale antal hits der er nødvendige (baseret på skibsstørrelser)
     totalRequiredHits = sum([gameData.ships.length]);
     
+    % Tilføj mulighed for hurtig batch-kørsel ved høj hastighed
+    batchSize = 10; % Antal simulationer at køre i én batch uden grafisk opdatering
+    
+    if simulationSpeed >= 8 && numSimulations > 10
+        batchProcessing = true;
+        % Kun opdater status for hver batch
+        updateFrequency = batchSize;
+    else
+        batchProcessing = false;
+        updateFrequency = 1;
+    end
+    
     % Kør simulationer
-    for sim = 1:numSimulations
+    sim = 1;
+    while sim <= numSimulations
+        % Bestem antal simulationer i denne batch
+        currentBatchSize = min(batchSize, numSimulations-sim+1);
+        batchEnd = sim + currentBatchSize - 1;
+        
         % Opdater status
-        set(statusText, 'String', sprintf('Simulation %d af %d...', sim, numSimulations));
-        set(progressBar, 'Value', (sim-1)/numSimulations);
-        drawnow;
+        if mod(sim-1, updateFrequency) == 0 || sim == 1
+            set(statusText, 'String', sprintf('Simulation %d-%d af %d...', sim, batchEnd, numSimulations));
+            set(progressBar, 'Value', (sim-1)/numSimulations);
+            drawnow;
+        end
         
-        % Nulstil spildata for denne simulation
-        simData = gameData;
-        simData.playerGrid = zeros(10, 10);
-        simData.computerGrid = zeros(10, 10);
-        simData.playerShots = zeros(10, 10);
-        simData.computerShots = zeros(10, 10);
-        simData.playerHits = [0, 0, 0];
-        simData.computerHits = [0, 0, 0];
-        
-        % Placer skibe tilfældigt for computeren og "spilleren" (som computeren spiller mod)
-        simData.playerGrid = placeComputerShips(simData.playerGrid, simData.ships);
-        simData.computerGrid = placeComputerShips(simData.computerGrid, simData.ships);
-        
-        % Gem hits og misses for denne simulation
-        hits = 0;
-        misses = 0;
-        moves = 0;
-        gameWon = false;
-        
-        % Simuler spillet (computeren skyder mod den tilfældige spillerplade)
-        while true
-            moves = moves + 1;
+        % Kør simulationer i batchen
+        for batchSim = sim:batchEnd
+            % Nulstil spildata for denne simulation
+            simData = gameData;
+            simData.playerGrid = zeros(10, 10);
+            simData.computerGrid = zeros(10, 10);
+            simData.playerShots = zeros(10, 10);
+            simData.computerShots = zeros(10, 10);
+            simData.playerHits = [0, 0, 0];
+            simData.computerHits = [0, 0, 0];
             
-            % Lad computeren skyde
-            [row, col] = getComputerShot(simData.computerShots, simData.playerGrid, difficulty);
+            % Placer skibe tilfældigt
+            simData.playerGrid = placeComputerShips(simData.playerGrid, simData.ships);
+            simData.computerGrid = placeComputerShips(simData.computerGrid, simData.ships);
             
-            % Registrer resultat
-            if simData.playerGrid(row, col) > 0
-                % Hit
-                shipType = simData.playerGrid(row, col);
-                simData.computerShots(row, col) = 2;
-                hits = hits + 1;
+            % Gem hits og misses for denne simulation
+            hits = 0;
+            misses = 0;
+            moves = 0;
+            gameWon = false;
+            
+            % Simuler spillet (computeren skyder mod den tilfældige spillerplade)
+            while true
+                moves = moves + 1;
                 
-                % Track ship damage
-                simData.playerHits(shipType) = simData.playerHits(shipType) + 1;
-            else
-                % Miss
-                simData.computerShots(row, col) = 1;
-                misses = misses + 1;
-            end
-            
-            % Opdater grafik hvis det er angivet, men uden pauser
-            if showGraphics
-                updateGridDisplay(handles.playerBoard, simData.playerGrid, simData.computerShots, true);
-                % Kun opdater skærmen hver 10. træk for at øge hastigheden
-                if mod(moves, 10) == 0
-                    drawnow;
+                % Lad computeren skyde
+                [row, col] = getComputerShot(simData.computerShots, simData.playerGrid, difficulty);
+                
+                % Registrer resultat
+                if simData.playerGrid(row, col) > 0
+                    % Hit
+                    shipType = simData.playerGrid(row, col);
+                    simData.computerShots(row, col) = 2;
+                    hits = hits + 1;
+                    
+                    % Track ship damage
+                    simData.playerHits(shipType) = simData.playerHits(shipType) + 1;
+                else
+                    % Miss
+                    simData.computerShots(row, col) = 1;
+                    misses = misses + 1;
+                end
+                
+                % Opdater grafik hvis det er angivet og ikke i batch mode
+                if showGraphics && ~batchProcessing
+                    % Kun opdater med en frekvens baseret på simulationshastighed
+                    updateGraphicsInterval = 11 - simulationSpeed; % 1 til 10 hastighed giver 10 til 1 interval
+                    if mod(moves, updateGraphicsInterval) == 0
+                        updateGridDisplay(handles.playerBoard, simData.playerGrid, simData.computerShots, true);
+                        drawnow;
+                    end
+                end
+                
+                % Check for victory
+                if sum(simData.playerHits) >= totalRequiredHits
+                    gameWon = true;
+                    break;
+                end
+                
+                % Sikkerhedscheck: Afbryd hvis for mange træk (undgå uendelige løkker)
+                if moves > 200
+                    break;
                 end
             end
             
-            % Check for victory
-            if sum(simData.playerHits) >= totalRequiredHits
-                gameWon = true;
-                break;
-            end
-            
-            % Sikkerhedscheck: Afbryd hvis for mange træk (undgå uendelige løkker)
-            if moves > 200
-                break;
-            end
+            % Gem resultater
+            results.totalMoves(batchSim) = moves;
+            results.totalHits(batchSim) = hits;
+            results.totalMisses(batchSim) = misses;
+            results.hitRatio(batchSim) = hits / moves;
+            results.gameWon(batchSim) = gameWon;
         end
         
-        % Gem resultater
-        results.totalMoves(sim) = moves;
-        results.totalHits(sim) = hits;
-        results.totalMisses(sim) = misses;
-        results.hitRatio(sim) = hits / moves;
-        results.gameWon(sim) = gameWon;
+        % Opdater fremgang
+        if batchProcessing
+            set(progressBar, 'Value', batchEnd/numSimulations);
+            drawnow;
+        end
+        
+        % Gå til næste batch
+        sim = batchEnd + 1;
     end
     
     % Gendan normale visning
@@ -169,8 +201,16 @@ function displaySimulationResults(fig, results)
                          avgHitRatio*100, winRate);
     
     uicontrol('Parent', summaryPanel, 'Style', 'text', ...
-             'Position', [20, 10, 680, 120], 'String', summaryText, ...
+             'Position', [20, 20, 680, 120], 'String', summaryText, ...
              'FontSize', 14, 'HorizontalAlignment', 'left', 'FontWeight', 'bold', ...
+             'BackgroundColor', [0.95 0.95 1]);
+    
+    % Vis besked til brugeren om gemte resultater
+    uicontrol('Parent', summaryPanel, 'Style', 'text', ...
+             'Position', [20, 5, 680, 20], ...
+             'String', ['Resultaterne er gemt i arbejdsområdet som ' ...
+                      '"battleshipSimResults" (struct) og "battleshipSimTable" (tabel).'], ...
+             'FontSize', 12, 'FontWeight', 'normal', 'HorizontalAlignment', 'left', ...
              'BackgroundColor', [0.95 0.95 1]);
     
     % Generer plots
@@ -199,14 +239,6 @@ function displaySimulationResults(fig, results)
     
     % Gem tabel i arbejdsområdet
     assignin('base', 'battleshipSimTable', resultsTable);
-    
-    % Vis besked til brugeren
-    uicontrol('Parent', summaryPanel, 'Style', 'text', ...
-             'Position', [20, 5, 680, 20], ...
-             'String', ['Resultaterne er gemt i arbejdsområdet som ' ...
-                      '"battleshipSimResults" (struct) og "battleshipSimTable" (tabel).'], ...
-             'FontSize', 12, 'HorizontalAlignment', 'left', ...
-             'BackgroundColor', [0.95 0.95 1]);
     
     % Eksporter data knap
     uicontrol('Parent', resultsFig, 'Style', 'pushbutton', ...
